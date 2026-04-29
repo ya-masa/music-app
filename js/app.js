@@ -32,30 +32,41 @@ function login() {
   });
 }
 
-// OneDrive の曲一覧を取得
-function loadOneDriveMusic() {
-  fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
+// Music フォルダの中の全 .m4a を集める
+async function loadOneDriveMusic() {
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  const data = await res.json();
+
+  console.log("Music フォルダの中身", data.value);
+
+  let songs = [];
+
+  // ★ フォルダごとに中身を取得
+  for (const item of data.value) {
+    if (item.folder) {
+      const folderId = item.id;
+
+      const res2 = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const data2 = await res2.json();
+
+      // ★ .m4a だけ抽出
+      const m4aFiles = data2.value.filter(f => f["@microsoft.graph.downloadUrl"]);
+      songs.push(...m4aFiles);
     }
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log("OneDrive の曲一覧", data.value);
+  }
 
-      // ★ ファイルだけに絞る（フォルダを除外）
-      const files = data.value.filter(item => item["@microsoft.graph.downloadUrl"]);
+  console.log("見つかった .m4a ファイル", songs);
 
-      if (files.length > 0) {
-        const first = files[0];
-        playFromOneDrive(first["@microsoft.graph.downloadUrl"]);
-      } else {
-        console.log("再生できる音楽ファイルがありません");
-      }
-    });
+  if (songs.length > 0) {
+    playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
+  } else {
+    console.log("再生できる音楽ファイルがありません");
+  }
 }
-
-
 
 // ==========================
 // ② 音楽プレイヤー部分
