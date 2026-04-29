@@ -1,30 +1,79 @@
-document.querySelectorAll('.card').forEach(card => {
-  card.addEventListener('click', () => {
-    alert(card.textContent + ' を開きます');
-    window.location.href = 'playlist.html?name=' + encodeURIComponent(card.textContent);
+// ==========================
+// ① OneDrive ログイン設定
+// ==========================
+const msalConfig = {
+  auth: {
+    clientId: "63462bf2-b1f0-4112-8c1e-900ab88cfde9",
+    redirectUri: "https://ya-masa.github.io/music-app/"
+  }
+};
+
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+let accessToken = null;
+
+// ログイン処理
+function login() {
+  msalInstance.loginPopup({
+    scopes: ["Files.Read"]
+  }).then(result => {
+    console.log("ログイン成功", result);
+
+    return msalInstance.acquireTokenSilent({
+      scopes: ["Files.Read"],
+      account: result.account
+    });
+  }).then(tokenResponse => {
+    accessToken = tokenResponse.accessToken;
+    console.log("アクセストークン取得", accessToken);
+
+    loadOneDriveMusic();
+  }).catch(err => {
+    console.error(err);
   });
-});
+}
 
-const row = document.querySelector('.card-row');
+// OneDrive の曲一覧を取得
+function loadOneDriveMusic() {
+  fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("OneDrive の曲一覧", data.value);
 
-row.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  row.scrollLeft += e.deltaY;
-});
+      if (data.value.length > 0) {
+        const first = data.value[0];
+        playFromOneDrive(first["@microsoft.graph.downloadUrl"]);
+      }
+    });
+}
 
-// 音源を読み込む（相対パス）
-const audio = new Audio('assets/audio/sample.m4a');
+// ==========================
+// ② 音楽プレイヤー部分
+// ==========================
 
-// ボタン取得
+// audio は1つだけ
+let audio = new Audio();
+let isPlaying = false;
+
+// OneDrive の曲を再生
+function playFromOneDrive(url) {
+  audio.src = url;
+  audio.play();
+  isPlaying = true;
+  playBtn.textContent = '⏸';
+  console.log("再生開始:", url);
+}
+
+// 再生ボタン
 const playBtn = document.getElementById('playBtn');
 const seekBar = document.getElementById('seekBar');
 const time = document.getElementById('duration');
 const currentTimeEl = document.getElementById('currentTime');
 
-let isPlaying = false;
-
 playBtn.addEventListener('click', () => {
-  time.textContent=formatTime(audio.duration);
   if (!isPlaying) {
     audio.play();
     playBtn.textContent = '⏸';
@@ -36,31 +85,29 @@ playBtn.addEventListener('click', () => {
   }
 });
 
-// ① 曲の進行に合わせてバーを動かす
+// シークバー更新
 audio.addEventListener('timeupdate', () => {
   const progress = (audio.currentTime / audio.duration) * 100;
   seekBar.value = progress;
+  currentTimeEl.textContent = formatTime(audio.currentTime);
+  time.textContent = formatTime(audio.duration);
 });
 
-// ② バーを動かすと再生位置が変わる
+// シークバー操作
 seekBar.addEventListener('input', () => {
   const newTime = (seekBar.value / 100) * audio.duration;
   audio.currentTime = newTime;
 });
 
-// 再生中に時間更新
-audio.addEventListener('timeupdate', () => {
-  currentTimeEl.textContent = formatTime(audio.currentTime);
-});
-
-// ボタン取得
+// ==========================
+// ミニプレイヤー
+// ==========================
 const playBtnMini = document.getElementById('mini-playBtn');
 const seekBarMini = document.getElementById('mini-seekBar');
 const timeMini = document.getElementById('mini-duration');
-const currentTimeMini= document.getElementById('mini-currentTime');
+const currentTimeMini = document.getElementById('mini-currentTime');
 
 playBtnMini.addEventListener('click', () => {
-  time.textContent=formatTime(audio.duration);
   if (!isPlaying) {
     audio.play();
     playBtnMini.textContent = '⏸';
@@ -72,33 +119,25 @@ playBtnMini.addEventListener('click', () => {
   }
 });
 
-// ① 曲の進行に合わせてバーを動かす
+// ミニプレイヤー更新
 audio.addEventListener('timeupdate', () => {
   const progress = (audio.currentTime / audio.duration) * 100;
   seekBarMini.value = progress;
-});
-
-// ② バーを動かすと再生位置が変わる
-seekBarMini.addEventListener('input', () => {
-  const newTime = (seekBar.value / 100) * audio.duration;
-  audio.currentTime = newTime;
-});
-
-// 再生中に時間更新
-audio.addEventListener('timeupdate', () => {
   currentTimeMini.textContent = formatTime(audio.currentTime);
+  timeMini.textContent = formatTime(audio.duration);
 });
 
-//リピートボタン
+// リピート
 const repeatBtn = document.getElementById('repeatBtn');
 let isRepeat = false;
+
 repeatBtn.addEventListener('click', () => {
   isRepeat = !isRepeat;
   audio.loop = isRepeat;
-  repeatBtn.style.opacity = isRepeat ? 1 : 0.4; // ON/OFFの見た目
+  repeatBtn.style.opacity = isRepeat ? 1 : 0.4;
 });
 
-
+// 時間フォーマット
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);

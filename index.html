@@ -13,6 +13,7 @@
     </header>
 
     <main class="home">
+      <button onclick="login()">OneDrive にログイン</button>
       <section class="card-section">
         <h2 class="section-title">プレイリスト</h2>
         <div class="card-row">
@@ -103,13 +104,23 @@
         </div>
       </div>
     </section> 
+    <script src="https://alcdn.msauth.net/browser/2.32.0/js/msal-browser.min.js"></script>
     <script src="js/app.js" defer></script>
   </body>
 </html>
 <script>
   if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("servie-worker.js");
+  navigator.serviceWorker.register("service-worker.js");
 }
+fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
+  headers: {
+    Authorization: `Bearer ${accessToken}`
+  }
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log(data.value); // ← 曲の一覧
+  });
 </script>
 <style>
     body {
