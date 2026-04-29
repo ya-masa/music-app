@@ -35,7 +35,7 @@ function login() {
 // Music フォルダの中の全 .m4a を集める
 async function loadOneDriveMusic() {
   // Music フォルダの ID を取得
-  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music", {
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   const musicFolder = await res.json();
@@ -52,6 +52,26 @@ async function loadOneDriveMusic() {
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
+}
+
+async function getFilesRecursively(itemId) {
+  const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/children`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  const data = await res.json();
+
+  let files = [];
+
+  for (const item of data.value) {
+    if (item.folder) {
+      const sub = await getFilesRecursively(item.id);
+      files.push(...sub);
+    } else if (item["@microsoft.graph.downloadUrl"]) {
+      files.push(item);
+    }
+  }
+
+  return files;
 }
 
 
