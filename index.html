@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>music-app</title>
+    <link rel="stylesheet" href="style/main.css">
+    <link rel="manifest" href="manifest.json">
+  </head>
+  <body>
+    <header class="header">
+      <h1 class="app-title">Music App</h1>
+    </header>
+
+    <main class="home">
+      <section class="card-section">
+        <h2 class="section-title">プレイリスト</h2>
+        <div class="card-row">
+          <div class="card">
+            <img src="assets/icons/music-note.png" class="card-icon">
+            <div class="card-title">曲名サンプル</div>
+          </div>
+          <div class="card">
+            <img src="assets/icons/music-note.png" class="card-icon">
+            <div class="card-title">曲名サンプル</div>
+          </div>
+          <div class="card">
+            <img src="assets/icons/music-note.png" class="card-icon">
+            <div class="card-title">曲名サンプル</div>
+          </div>
+        </div>
+      </section>
+      <section class="card-section">
+        <h2 class="section-title">最近再生した曲</h2>
+        <div class="card-row">
+          <div class="card">
+            <img src="assets/icons/music-note.png" class="card-icon">
+            <div class="card-title">最近の曲1</div>
+          </div>
+          <div class="card">
+            <img src="assets/icons/music-note.png" class="card-icon">
+            <div class="card-title">最近の曲2</div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <section id="now-playing" class="screen">
+
+      <!-- ジャケット画像 -->
+      <div>
+        <img src="assets/icons/music-note.png" alt="cover" class="np-cover">
+      </div>
+
+      <!-- 曲名・アーティスト -->
+      <div class="np-info">
+        <h2 class="np-title">曲名</h2>
+        <p class="np-artist">アーティスト名</p>
+      </div>
+
+      <!-- シークバー -->
+      <div class="np-progress">
+        <span class="np-time">0:00</span>
+        <input type="range" min="0" max="100" value="0" id="seekBar" class="np-slider">
+        <span id="currentTime" class="np-duration">0:00</span><span>/</span>
+        <span id="duration" class="np-duration">4:32</span>
+      </div>
+
+      <!-- コントロールボタン -->
+      <div class="np-controls">
+        <button class="np-prev">⏮</button>
+        <button id="playBtn">▶</button>
+        <button class="np-next">⏭</button>
+      </div>
+
+    </section>
+    <section id="mini-player" class="screen">
+      <!-- シークバー -->
+      <div class="mini-progress">
+        <span class="np-time">0:00</span>
+        <input type="range" min="0" max="100" value="0" id="mini-seekBar" class="mini-slider">
+        <span id="mini-currentTime" class="np-duration">0:00</span><span>/</span>
+        <span id="mini-duration" class="np-duration">4:32</span>
+      </div>
+      <div class="mini-row">
+        <!-- ジャケット画像 -->
+        <div>
+          <img src="assets/icons/music-note.png" alt="cover" class="mini-cover">
+        </div>
+        <!-- 曲名・アーティスト -->
+        <div class="mini-info">
+          <span class="mini-title">曲名</span><span>/</span>
+          <span class="mini-artist">アーティスト名</span>
+        </div>
+        <!-- コントロールボタン -->
+        <div class="mini-controls">
+          <button id="mini-playBtn" class="mini-playbtn">▶</button>
+          <button id="repeatBtn" class="mini-repeat-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+              <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <button class="np-next" class="mini-next-btn">⏭</button>
+        </div>
+      </div>
+    </section> 
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
+<script>
+  if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("servie-worker.js");
+}
+</script>
+<style>
+    body {
+    background: var(--base-bg);
+    color: var(--text-main);
+    margin: 0;
+    font-family: sans-serif;
+    padding-bottom: 80px; /* ミニプレイヤーの高さ分 */
+
+  }
+
+  /* タイトル */
+  .header {
+    padding: 20px;
+  }
+
+  .app-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  /* セクション */
+  .section-title {
+    font-size: 18px;
+    margin: 0 0 12px 8px;
+    color: var(--accent-blue-dark);
+  }
+
+  /* 横スクロールカード */
+.card-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-left: 8px;
+
+  /* スマホで気持ちよく止まる */
+  scroll-snap-type: x mandatory;
+
+  /* スクロールバーを隠す（見た目を綺麗に） */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.card-row::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px var(--shadow-soft);
+  width: 140px;
+  height: 140px; /* 正方形 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text-main);
+
+  /* スクロール時にカードが“パチッ”と止まる */
+  scroll-snap-align: start;
+}
+.card-icon {
+  width: 60%;
+  height: auto;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.card-title {
+  font-size: 14px;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+#now-playing {
+  padding: 20px;
+  text-align: center;
+}
+.np-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.np-info .np-title {
+  font-size: 20px;
+  margin: 8px 0 4px;
+}
+
+.np-info .np-artist {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.np-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.np-slider {
+  flex: 1;
+}
+
+.np-controls button {
+  font-size: 24px;
+  margin: 0 12px;
+}
+.repeat-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #e0e0e0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;          /* ← OFFのときは薄く */
+  transition: 0.2s ease; /* ← ふわっと変わる */
+}
+
+/* ONのときに付けるクラス */
+.repeat-btn.active {
+  background: #ffffff;
+  border: 1px solid #aaa;
+  color: #444;
+}
+
+#mini-player {
+  width: 100%;
+  padding: 6px 10px;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
+  box-sizing: border-box;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000; /* ← 他の要素より前に出す */
+}
+.mini-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px;
+}
+.mini-slider {
+  width: 100%;
+  height:4px;
+}
+
+.mini-row {
+  display: flex;
+  align-items: left;
+  gap: 8px;
+  padding:0,30px;
+}
+
+.mini-cover {
+  width: 35px;
+  height: 35px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.mini-info {
+  flex: 1;
+  display: flex;
+  flex-direction: row;  
+  align-items: center;
+  gap: 4px;     /* ← タイトルと歌手名の間に少し余白 */
+  white-space: nowrap;
+}
+
+
+.mini-title {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.mini-artist {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.2;
+}
+
+.mini-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.mini-playbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mini-repeat-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;          /* ← OFFのときは薄く */
+  transition: 0.2s ease; /* ← ふわっと変わる */
+  color: #444;
+  text-align: bold;
+}
+
+/* ONのときに付けるクラス */
+.mini-repeat-btn.active {
+  background: #ffffff;
+  border: 1px solid #aaa;
+  color: #444;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+</style>

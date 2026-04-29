@@ -1,0 +1,87 @@
+
+:root{
+
+    /* Base */
+    --base-bg: #F2F2F0;
+    --card-bg: #E9E7E4;
+
+    /* Accent */
+    --accent-blue: #5A6E8C;
+    --accent-blue-dark: #4A5A73;
+
+    /* Text */
+    --text-main: #2F2F2F;
+    --text-sub: #6A6A6A;
+
+    /* Buttons / Icons */
+    --icon-normal: #4A5A73;
+    --icon-active: #3C4A5A;
+    --button-bg: #DDE3EB;
+
+    /* Border / Shadow */
+    --border-light: #D5D5D5;
+    --shadow-soft: rgba(0,0,0,0.06);
+}
+
+body {
+  background: var(--base-bg);
+  color: var(--text-main);
+  font-family: sans-serif;
+  padding-bottom: 80px; /* ミニプレイヤーの高さ分 */
+
+}
+
+/*横スクロールカード*/
+.card {
+  cursor: pointer;
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px var(--shadow-soft);
+  margin-right: 12px;
+  width: 180px;
+}
+
+/*縦型リストカード*/
+.list-item {
+  background: var(--card-bg);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/*再生ボタン*/
+.play-button {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--button-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icon-normal);
+  font-size: 32px;
+}
+
+.form-container {
+  height: 80vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 24px;
+}
+
+.form-item {
+  margin-bottom: 32px;
+  padding: 16px;
+  border-radius: 8px;
+  transition:
+    background-color 150ms linear,
+    box-shadow 150ms linear;
+}
+
+.form-item.highlight {
+  background-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+  transition:
+    background-color 150ms linear,
+    box-shadow 150ms linear;
+}
