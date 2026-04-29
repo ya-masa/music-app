@@ -47,6 +47,8 @@ async function loadOneDriveMusic() {
 
   console.log("見つかった音楽ファイル", songs);
 
+  renderSongList(songs);  // ← 追加
+
   if (songs.length > 0) {
     playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
   } else {
@@ -167,4 +169,26 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+//曲一覧表示
+function renderSongList(songs) {
+  const list = document.getElementById("songList");
+  list.innerHTML = ""; // 一旦クリア
+
+  songs.forEach(song => {
+    const div = document.createElement("div");
+    div.className = "song-item";
+
+    div.innerHTML = `
+      <div class="song-title">${song.name}</div>
+    `;
+
+    // クリックで再生
+    div.addEventListener("click", () => {
+      playFromOneDrive(song["@microsoft.graph.downloadUrl"]);
+    });
+
+    list.appendChild(div);
+  });
 }
