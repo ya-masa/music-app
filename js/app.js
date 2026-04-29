@@ -3,7 +3,7 @@
 // ==========================
 const msalConfig = {
   auth: {
-    clientId: "63462bf2-b1f0-4112-8c1e-900ab88cfde9",
+    clientId: "8060f641-ad7f-452f-b250-26d888aa4a19",
     redirectUri: "https://ya-masa.github.io/music-app/"
   }
 };
