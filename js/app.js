@@ -34,40 +34,26 @@ function login() {
 
 // Music フォルダの中の全 .m4a を集める
 async function loadOneDriveMusic() {
-  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music:/children", {
+  // Music フォルダの ID を取得
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music", {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  const item = await res.json();
+  const musicFolder = await res.json();
 
-  console.log("Music フォルダの中身", item.value);
+  console.log("Music フォルダ情報", musicFolder);
 
-  let songs = [];
+  // ★ 再帰的にファイルを集める
+  const songs = await getFilesRecursively(musicFolder.id);
 
-  // ★ フォルダごとに中身を取得
-  for (const item of result.value) {
-    if (item.folder) {
-      // フォルダならさらに潜る
-      const subFiles = await getAllMusicFiles(item.id);
-      files = files.concat(subFiles);
-    } else {
-      // ファイルなら拡張子チェック
-      if (item.name.endsWith(".m4a") || item.name.endsWith(".mp3")) {
-        files.push({
-          name: item.name,
-          url: item["@microsoft.graph.downloadUrl"]
-        });
-      }
-    }
-  }
+  console.log("見つかった音楽ファイル", songs);
 
-  console.log("見つかった .m4a ファイル", files);
-
-  if (files.length > 0) {
-    playFromOneDrive(files[0]["@microsoft.graph.downloadUrl"]);
+  if (songs.length > 0) {
+    playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
 }
+
 
 // ==========================
 // ② 音楽プレイヤー部分
