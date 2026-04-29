@@ -43,12 +43,19 @@ function loadOneDriveMusic() {
     .then(data => {
       console.log("OneDrive の曲一覧", data.value);
 
-      if (data.value.length > 0) {
-        const first = data.value[0];
+      // ★ ファイルだけに絞る（フォルダを除外）
+      const files = data.value.filter(item => item["@microsoft.graph.downloadUrl"]);
+
+      if (files.length > 0) {
+        const first = files[0];
         playFromOneDrive(first["@microsoft.graph.downloadUrl"]);
+      } else {
+        console.log("再生できる音楽ファイルがありません");
       }
     });
 }
+
+
 
 // ==========================
 // ② 音楽プレイヤー部分
