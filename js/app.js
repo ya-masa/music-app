@@ -34,38 +34,62 @@ function login() {
 
 // Music フォルダの中の全 .m4a を集める
 async function loadOneDriveMusic() {
-  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/usic:/children", {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  const data = await res.json();
+  const item = await res.json();
 
   console.log("Music フォルダの中身", data.value);
 
   let songs = [];
 
   // ★ フォルダごとに中身を取得
-  for (const item of data.value) {
+  for (const item of result.value) {
     if (item.folder) {
-      const folderId = item.id;
-
-      const res2 = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const data2 = await res2.json();
-
-      // ★ .m4a だけ抽出
-      const m4aFiles = data2.value.filter(f => f["@microsoft.graph.downloadUrl"]);
-      songs.push(...m4aFiles);
+      // フォルダならさらに潜る
+      const subFiles = await getAllMusicFiles(item.id);
+      files = files.concat(subFiles);
+    } else {
+      // ファイルなら拡張子チェック
+      if (item.name.endsWith(".m4a") || item.name.endsWith(".mp3")) {
+        files.push({
+          name: item.name,
+          url: item["@microsoft.graph.downloadUrl"]
+        });
+      }
     }
   }
 
-  console.log("見つかった .m4a ファイル", songs);
+  console.log("見つかった .m4a ファイル", files);
 
   if (songs.length > 0) {
     playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
+}
+
+async function getAllMusicFiles(folderId) {
+  const result = await client.api(`/me/drive/items/${folderId}/children`).get();
+  let files = [];
+
+  for (const item of result.value) {
+    if (item.folder) {
+      // フォルダならさらに潜る
+      const subFiles = await getAllMusicFiles(item.id);
+      files = files.concat(subFiles);
+    } else {
+      // ファイルなら拡張子チェック
+      if (item.name.endsWith(".m4a") || item.name.endsWith(".mp3")) {
+        files.push({
+          name: item.name,
+          url: item["@microsoft.graph.downloadUrl"]
+        });
+      }
+    }
+  }
+
+  return files;
 }
 
 // ==========================
