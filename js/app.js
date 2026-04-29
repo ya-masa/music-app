@@ -62,8 +62,8 @@ async function loadOneDriveMusic() {
 
   console.log("見つかった .m4a ファイル", files);
 
-  if (songs.length > 0) {
-    playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
+  if (files.length > 0) {
+    playFromOneDrive(files[0]["@microsoft.graph.downloadUrl"]);
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
