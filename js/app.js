@@ -39,7 +39,7 @@ async function loadOneDriveMusic() {
   });
   const item = await res.json();
 
-  console.log("Music フォルダの中身", data.value);
+  console.log("Music フォルダの中身", item.value);
 
   let songs = [];
 
@@ -67,29 +67,6 @@ async function loadOneDriveMusic() {
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
-}
-
-async function getAllMusicFiles(folderId) {
-  const result = await client.api(`/me/drive/items/${folderId}/children`).get();
-  let files = [];
-
-  for (const item of result.value) {
-    if (item.folder) {
-      // フォルダならさらに潜る
-      const subFiles = await getAllMusicFiles(item.id);
-      files = files.concat(subFiles);
-    } else {
-      // ファイルなら拡張子チェック
-      if (item.name.endsWith(".m4a") || item.name.endsWith(".mp3")) {
-        files.push({
-          name: item.name,
-          url: item["@microsoft.graph.downloadUrl"]
-        });
-      }
-    }
-  }
-
-  return files;
 }
 
 // ==========================
