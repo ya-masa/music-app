@@ -45,11 +45,13 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    // GitHub Pages の場合は /music-app/offline/ になる
-    if (url.pathname.includes("/music-app/offline/") && url.pathname.endsWith(".m4a")) {
+    if (url.pathname.includes("/offline/") && !url.pathname.endsWith("-cover")) {
+
+      const fullKey = url.pathname.split("/").pop(); // ID__ファイル名
+      const fileName = fullKey.split("__")[1];       // ファイル名だけ取り出す
 
       songs.push({
-        name: url.pathname.split("/").pop(),
+        name: fileName,
         url: request.url,
         offline: true
       });
@@ -57,6 +59,7 @@ async function getOfflineSongs() {
   }
   return songs;
 }
+
 
 
 //  自動でオフライン曲を順番に流す
@@ -186,23 +189,27 @@ async function getFilesRecursively(itemId) {
 
 // ★ song.id をキーにして、同名ファイルでも上書きされないようにする
 async function saveSongOffline(song) {
-  const fileName = song.name;
-  const songId = song.id;
+  const fileName = song.name;          // 例: "01 炎.m4a"
+  const songId = song.id;              // 完全ユニーク
+  const key = `${songId}__${fileName}`; // ← 衝突しないキー
 
+  // 曲データ
   const songRes = await fetch(song["@microsoft.graph.downloadUrl"]);
   const songBlob = await songRes.blob();
 
+  // ジャケット画像
   const coverUrl = await getCoverImage(song);
   const coverRes = await fetch(coverUrl);
   const coverBlob = await coverRes.blob();
 
   const cache = await caches.open("music-app-v1");
 
-  await cache.put(`/offline/${songId}`, new Response(songBlob));
-  await cache.put(`/offline/${songId}-cover`, new Response(coverBlob));
+  await cache.put(`/offline/${key}`, new Response(songBlob));
+  await cache.put(`/offline/${key}-cover`, new Response(coverBlob));
 
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
 }
+
 
 async function getOfflineSongs() {
   const cache = await caches.open("music-app-v1");
