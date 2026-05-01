@@ -35,20 +35,6 @@ const repeatBtn = document.getElementById('mini-repeatBtn');
 // 起動時の処理
 // ==========================
 
-window.addEventListener("load", async () => {
-  
-  const offlineSongs = await getOfflineSongs();
-
-  if (offlineSongs.length > 0) {
-    showLoading();
-    // UI に表示
-    renderSongList(offlineSongs);
-    hideLoading();
-    // 自動再生開始
-    startOfflinePlaylist(offlineSongs);
-  }
-});
-
 //オフライン曲の表示
 async function getOfflineSongs() {
   const cache = await caches.open("music-app-v1");
@@ -86,6 +72,7 @@ function playOfflineSong() {
   const song = offlinePlaylist[offlineIndex];
   const audio = document.getElementById("audioPlayer");
 
+  console.log("Playing:", song.url); // ←デバッグ用
   audio.src = song.url;
   audio.play();
 
@@ -95,6 +82,21 @@ function playOfflineSong() {
   };
 }
 
+window.addEventListener("load", async () => {
+  const offlineSongs = await getOfflineSongs();
+
+  console.log("Offline songs:", offlineSongs); // ←デバッグ用
+
+  if (offlineSongs.length > 0) {
+    showLoading();
+    getOfflineSongs();//オフライン曲の表示
+    hideLoading();
+    startOfflinePlaylist(offlineSongs);//曲再生
+
+  } else {
+    console.log("オフライン曲が見つからない");
+  }
+});
 
 // ==========================
 // ログイン処理
