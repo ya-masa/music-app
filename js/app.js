@@ -11,7 +11,29 @@ const msalConfig = {
 const msalInstance = new msal.PublicClientApplication(msalConfig);
 let accessToken = null;
 
+// ==========================
+// 共通プレイヤー用の変数・要素
+// ==========================
+let audio = new Audio();
+let isPlaying = false;
+let isRepeat = false;
+
+// メインプレイヤー要素（ID は HTML に合わせてね）
+const playBtn = document.getElementById('playBtn');
+const seekBar = document.getElementById('seekBar');
+const time = document.getElementById('duration');
+const currentTimeEl = document.getElementById('currentTime');
+
+// ミニプレイヤー
+const playBtnMini = document.getElementById('mini-playBtn');
+const seekBarMini = document.getElementById('mini-seekBar');
+const timeMini = document.getElementById('mini-duration');
+const currentTimeMini = document.getElementById('mini-currentTime');
+const repeatBtn = document.getElementById('mini-repeat-Btn');
+
+// ==========================
 // ログイン処理
+// ==========================
 function login() {
   alert("Microsoft のログイン画面に移動します");
   msalInstance.loginPopup({
@@ -26,48 +48,49 @@ function login() {
     accessToken = tokenResponse.accessToken;
     console.log("アクセストークン取得", accessToken);
     showLoading();
-    loadOneDriveMusic();
-    hideLoading();
-
+    loadOneDriveMusic().finally(() => {
+      hideLoading();
+    });
   }).catch(err => {
     console.error(err);
     hideLoading();
   });
 }
 
-//フォルダの中の全 .m4a を集める
+// ==========================
+// OneDrive から曲一覧取得
+// ==========================
 async function loadOneDriveMusic() {
-  // Music フォルダの ID を取得"https://graph.microsoft.com/v1.0/me/drive/root:/music"
-    const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   const musicFolder = await res.json();
 
   console.log("Music フォルダ情報", musicFolder);
 
-  // ★ 再帰的にファイルを集める
   const songs = await getFilesRecursively(musicFolder.id);
 
   console.log("見つかった音楽ファイル", songs);
 
-  renderAllLists(songs);  // ← 追加
+  renderAllLists(songs);
 
   if (songs.length > 0) {
-    playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
+    // 最初の曲を再生
+    playSong(songs[0]);
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
 }
 
-//ローディング中表示
+// ローディング表示
 function showLoading() {
   document.getElementById("loading").style.display = "flex";
 }
-//ローディング中表示の停止
 function hideLoading() {
   document.getElementById("loading").style.display = "none";
 }
 
+// 再帰的にファイル取得
 async function getFilesRecursively(itemId) {
   const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/children`, {
     headers: { Authorization: `Bearer ${accessToken}` }
@@ -88,74 +111,76 @@ async function getFilesRecursively(itemId) {
   return files;
 }
 
-//曲をオフライン保存する
+// ==========================
+// オフライン保存関連
+// ==========================
+
+// ★ song.id をキーにして、同名ファイルでも上書きされないようにする
 async function saveSongOffline(song) {
   const fileName = song.name;
+  const songId = song.id;
 
-  // ① 曲データを取得
   const songRes = await fetch(song["@microsoft.graph.downloadUrl"]);
   const songBlob = await songRes.blob();
 
-  // ② ジャケット画像URLを取得
   const coverUrl = await getCoverImage(song);
-
-  // ③ ジャケット画像を取得
   const coverRes = await fetch(coverUrl);
   const coverBlob = await coverRes.blob();
 
-  // ④ キャッシュに保存
   const cache = await caches.open("music-app-v1");
 
-  await cache.put(`/offline/${fileName}`, new Response(songBlob));
-  await cache.put(`/offline/${fileName}-cover`, new Response(coverBlob));
+  await cache.put(`/offline/${songId}`, new Response(songBlob));
+  await cache.put(`/offline/${songId}-cover`, new Response(coverBlob));
 
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
 }
 
-//オフライン曲を取得
 async function getOfflineSongs() {
   const cache = await caches.open("music-app-v1");
   const keys = await cache.keys();
 
+  // /offline/ の後ろにある ID を取り出す（-cover は除外）
   return keys
     .filter(req => req.url.includes("/offline/") && !req.url.includes("-cover"))
     .map(req => decodeURIComponent(req.url.split("/offline/")[1]));
 }
 
-
-// ==========================
-// ② 音楽プレイヤー部分
-// ==========================
-
-// audio は1つだけ
-let audio = new Audio();
-let isPlaying = false;
-
-// OneDrive の曲を再生
-function playFromOneDrive(url) {
-  audio.src = url;
-  audio.play();
-  isPlaying = true;
-  playBtn.textContent = '⏸';
-  console.log("再生開始:", url);
+async function isSongOffline(song) {
+  const cache = await caches.open("music-app-v1");
+  const cached = await cache.match(`/offline/${song.id}`);
+  return !!cached;
 }
 
-//オフライン再生用プレーヤー
-async function playSong(song) {
-  const fileName = song.name;
-  const offline = await caches.match(`/offline/${fileName}`);
+async function deleteSongOffline(song) {
+  const cache = await caches.open("music-app-v1");
 
-  // UI 更新（曲名・アーティスト）
+  const deletedSong = await cache.delete(`/offline/${song.id}`);
+  const deletedCover = await cache.delete(`/offline/${song.id}-cover`);
+
+  if (deletedSong || deletedCover) {
+    alert(`${song.name} のオフラインデータを削除しました`);
+  } else {
+    alert(`${song.name} はオフライン保存されていません`);
+  }
+}
+
+// ==========================
+// 再生処理（ここを一本化）
+// ==========================
+async function playSong(song) {
+  console.log("再生要求:", song.name);
+
+  // UI 更新
   updateNowPlayingUI(song);
   enableScrollIfNeeded(".np-title");
   enableScrollIfNeeded(".mini-title");
-  // アーティスト名スクロール
   enableScrollIfNeeded(".np-artist");
   enableScrollIfNeeded(".mini-artist");
 
-  // ★ ジャケット画像を取得して反映　ジャケット画像（オフライン優先）
-  const coverOffline = await caches.match(`/offline/${song.name}-cover`);
+  const cache = await caches.open("music-app-v1");
 
+  // ジャケット画像（オフライン優先）
+  const coverOffline = await cache.match(`/offline/${song.id}-cover`);
   if (coverOffline) {
     const blob = await coverOffline.blob();
     const url = URL.createObjectURL(blob);
@@ -167,98 +192,132 @@ async function playSong(song) {
     document.querySelector(".mini-cover").src = coverUrl;
   }
 
+  // 曲本体（オフライン優先）
+  const offline = await cache.match(`/offline/${song.id}`);
   if (offline) {
-    // オフライン再生
     const blob = await offline.blob();
     audio.src = URL.createObjectURL(blob);
-    console.log("オフライン再生:", fileName);
+    console.log("オフライン再生:", song.name);
   } else {
-    // OneDrive から再生
     audio.src = song["@microsoft.graph.downloadUrl"];
-    console.log("オンライン再生:", fileName);
+    console.log("オンライン再生:", song.name);
   }
 
-  audio.play();
+  await audio.play();
   isPlaying = true;
-  playBtn.textContent = '⏸';
+
+  if (playBtn) playBtn.textContent = '⏸';
+  if (playBtnMini) playBtnMini.textContent = '⏸';
 }
 
-//曲がオフライン保存されているかチェックする
-async function isSongOffline(fileName) {
-  const cached = await caches.match(`/offline/${fileName}`);
-  return !!cached;
+// ==========================
+// プレイヤー共通イベント
+// ==========================
+
+// メイン再生ボタン
+if (playBtn) {
+  playBtn.addEventListener('click', () => {
+    if (!isPlaying) {
+      audio.play();
+      isPlaying = true;
+      playBtn.textContent = '⏸';
+      if (playBtnMini) playBtnMini.textContent = '⏸';
+    } else {
+      audio.pause();
+      isPlaying = false;
+      playBtn.textContent = '▶';
+      if (playBtnMini) playBtnMini.textContent = '▶';
+    }
+  });
 }
 
-// シークバー更新
-audio.addEventListener('timeupdate', () => {
-  const progress = (audio.currentTime / audio.duration) * 100;
-  seekBar.value = progress;
-  currentTimeEl.textContent = formatTime(audio.currentTime);
-  time.textContent = formatTime(audio.duration);
-});
-
-// シークバー操作
-seekBar.addEventListener('input', () => {
-  const newTime = (seekBar.value / 100) * audio.duration;
-  audio.currentTime = newTime;
-});
-
-// ==========================
-// ミニプレイヤー
-// ==========================
-const playBtnMini = document.getElementById('mini-playBtn');
-const seekBarMini = document.getElementById('mini-seekBar');
-const timeMini = document.getElementById('mini-duration');
-const currentTimeMini = document.getElementById('mini-currentTime');
-
-playBtnMini.addEventListener('click', () => {
-  if (!isPlaying) {
-    audio.play();
-    playBtnMini.textContent = '⏸';
-    isPlaying = true;
-  } else {
-    audio.pause();
-    playBtnMini.textContent = '▶';
-    isPlaying = false;
-  }
-});
-
-// ミニプレイヤーシークバー更新
-audio.addEventListener('timeupdate', () => {
-  const progress = (audio.currentTime / audio.duration) * 100;
-  seekBarMini.value = progress;
-  currentTimeMini.textContent = formatTime(audio.currentTime);
-  timeMini.textContent = formatTime(audio.duration);
-});
+// ミニ再生ボタン
+if (playBtnMini) {
+  playBtnMini.addEventListener('click', () => {
+    if (!isPlaying) {
+      audio.play();
+      isPlaying = true;
+      playBtnMini.textContent = '⏸';
+      if (playBtn) playBtn.textContent = '⏸';
+    } else {
+      audio.pause();
+      isPlaying = false;
+      playBtnMini.textContent = '▶';
+      if (playBtn) playBtn.textContent = '▶';
+    }
+  });
+}
 
 // リピート
-const repeatBtn = document.getElementById('mini-repeat-Btn');
-let isRepeat = false;
+if (repeatBtn) {
+  repeatBtn.addEventListener('click', () => {
+    isRepeat = !isRepeat;
+    audio.loop = isRepeat;
+    repeatBtn.style.opacity = isRepeat ? 1 : 0.4;
+  });
+}
 
-repeatBtn.addEventListener('click', () => {
-  isRepeat = !isRepeat;
-  audio.loop = isRepeat;
-  repeatBtn.style.opacity = isRepeat ? 1 : 0.4;
+// timeupdate（メイン＋ミニ両方更新）
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration) {
+    const progress = (audio.currentTime / audio.duration) * 100;
+
+    if (seekBar) {
+      seekBar.value = progress;
+      currentTimeEl.textContent = formatTime(audio.currentTime);
+      time.textContent = formatTime(audio.duration);
+    }
+
+    if (seekBarMini) {
+      seekBarMini.value = progress;
+      currentTimeMini.textContent = formatTime(audio.currentTime);
+      timeMini.textContent = formatTime(audio.duration);
+    }
+  }
 });
+
+// シークバー操作（メイン）
+if (seekBar) {
+  seekBar.addEventListener('input', () => {
+    if (audio.duration) {
+      const newTime = (seekBar.value / 100) * audio.duration;
+      audio.currentTime = newTime;
+    }
+  });
+}
+
+// ミニシークバー操作
+if (seekBarMini) {
+  seekBarMini.addEventListener('input', () => {
+    if (audio.duration) {
+      const newTime = (seekBarMini.value / 100) * audio.duration;
+      audio.currentTime = newTime;
+    }
+  });
+}
 
 // 時間フォーマット
 function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-//曲一覧表示
-//オフライン再生
-function renderSongList(songs, targetId) {
+// ==========================
+// 曲一覧表示
+// ==========================
+function renderSongList(songs, targetId, allSongs) {
   const list = document.getElementById(targetId);
+  if (!list) return;
+
   list.innerHTML = "";
 
   songs.forEach(async song => {
     const div = document.createElement("div");
     div.className = "song-item";
 
-    const offline = await isSongOffline(song.name);
+    const offline = await isSongOffline(song);
     const coverUrl = await getCoverImage(song);
 
     div.innerHTML = `
@@ -266,7 +325,7 @@ function renderSongList(songs, targetId) {
 
       <div class="song-info">
         <div class="song-title">${song.name}</div>
-        <div class="song-artist">${song.parentReference?.path?.split("/")[3] || "Unknown"}</div>
+        <div class="song-artist">${getArtistName(song)}</div>
       </div>
 
       <button class="save-btn">${offline ? "✓ 保存済み" : "↓ 保存"}</button>
@@ -281,14 +340,14 @@ function renderSongList(songs, targetId) {
     // 保存
     div.querySelector(".save-btn").addEventListener("click", async () => {
       await saveSongOffline(song);
-      renderAllLists(songs); // ← 後で作る
+      renderAllLists(allSongs);
     });
 
     // 削除
     if (offline) {
       div.querySelector(".delete-btn").addEventListener("click", async () => {
         await deleteSongOffline(song);
-        renderAllLists(songs);
+        renderAllLists(allSongs);
       });
     }
 
@@ -296,67 +355,49 @@ function renderSongList(songs, targetId) {
   });
 }
 
-//オフライン曲、ダウンロード曲、抽出
 async function renderAllLists(oneDriveSongs) {
-  const offlineNames = await getOfflineSongs();
+  const offlineIds = await getOfflineSongs();
 
-  // ① オフライン曲だけ抽出
   const offlineSongs = oneDriveSongs.filter(song =>
-    offlineNames.includes(song.name)
+    offlineIds.includes(song.id)
   );
 
-  // ② 未保存の曲だけ抽出
   const cloudSongs = oneDriveSongs.filter(song =>
-    !offlineNames.includes(song.name)
+    !offlineIds.includes(song.id)
   );
 
-  // ③ それぞれ描画
-  renderSongList(offlineSongs, "offlineList");
-  renderSongList(cloudSongs, "cloudList");
+  renderSongList(offlineSongs, "offlineList", oneDriveSongs);
+  renderSongList(cloudSongs, "cloudList", oneDriveSongs);
 }
 
-
-
-//オフライン再生曲削除
-async function deleteSongOffline(song) {
-  const fileName = song.name;
-  const cache = await caches.open("music-app-v1");
-
-  const deletedSong = await cache.delete(`/offline/${fileName}`);
-  const deletedCover = await cache.delete(`/offline/${fileName}-cover`);
-
-  if (deletedSong || deletedCover) {
-    alert(`${fileName} のオフラインデータを削除しました`);
-  } else {
-    alert(`${fileName} はオフライン保存されていません`);
-  }
-}
-
-
-//曲表示名変更
+// ==========================
+// UI 関連
+// ==========================
 function updateNowPlayingUI(song) {
   const title = song.name;
   const artist = getArtistName(song);
 
-  // ミニプレイヤー
-  document.querySelector(".mini-title").textContent = title;
-  document.querySelector(".mini-artist").textContent = artist;
+  const miniTitle = document.querySelector(".mini-title");
+  const miniArtist = document.querySelector(".mini-artist");
+  const npTitle = document.querySelector(".np-title");
+  const npArtist = document.querySelector(".np-artist");
+
+  if (miniTitle) miniTitle.textContent = title;
+  if (miniArtist) miniArtist.textContent = artist;
+  if (npTitle) npTitle.textContent = title;
+  if (npArtist) npArtist.textContent = artist;
 }
 
-//歌手名
 function getArtistName(song) {
   const path = song.parentReference?.path || "";
   const parts = path.split("/");
-
   // 例: ["drive", "root:", "music", "宇多田ヒカル", "First Love"]
-  // アーティスト名は index 3
   return parts[4] || "Unknown";
 }
 
-
-//曲名スクロール
 function enableScrollIfNeeded(selector) {
   const el = document.querySelector(selector);
+  if (!el) return;
   if (el.scrollWidth > el.clientWidth) {
     el.classList.add("scroll-text");
   } else {
@@ -364,7 +405,7 @@ function enableScrollIfNeeded(selector) {
   }
 }
 
-//画像がない時はデフォルト画像を表示
+// ジャケット画像取得
 async function getCoverImage(song) {
   const parentId = song.parentReference.id;
 
@@ -375,12 +416,10 @@ async function getCoverImage(song) {
 
   const data = await res.json();
 
-  // jpg / png を探す
   const image = data.value.find(item =>
     item.name.match(/\.(jpg|jpeg|png)$/i)
   );
 
-  // ★画像がない時はデフォルト画像を返す
   return image
     ? image["@microsoft.graph.downloadUrl"]
     : "assets/images/music-note.png";

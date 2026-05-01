@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style/main.css">
     <link rel="manifest" href="manifest.json">
   </head>
+
   <body>
     <header class="header">
       <h1 class="app-title">Music App</h1>
@@ -14,58 +15,58 @@
 
     <main class="home">
       <button onclick="login()">OneDrive にログイン</button>
+
       <h2>📥 オフライン保存済み</h2>
       <div id="offlineList" class="song-list"></div>
 
       <h2>☁ OneDrive の曲</h2>
       <div id="cloudList" class="song-list"></div>
+
       <div id="loading" class="loading" style="display:none;">
         <div class="spinner"></div>
         <p>読み込み中…</p>
       </div>
-      <div id="songList" class="song-list"></div>
     </main>
-    <section id="now-player" class="screen">
-    
+
+    <!-- ==========================
+         ミニプレイヤー（固定表示）
+    =========================== -->
     <section id="mini-player" class="screen">
-      <!-- シークバー -->
       <div class="mini-progress">
-        <span class="np-time">0:00</span>
+        <span id="mini-currentTime" class="np-duration">0:00</span>
         <input type="range" min="0" max="100" value="0" id="mini-seekBar" class="mini-slider">
-        <span id="mini-currentTime" class="np-duration">0:00</span><span>/</span>
-        <span id="mini-duration" class="np-duration">4:32</span>
+        <span id="mini-duration" class="np-duration">0:00</span>
       </div>
+
       <div class="mini-row">
-        <!-- ジャケット画像 -->
-        <div>
-          <img src="assets/icons/music-note.png" alt="cover" class="mini-cover">
-        </div>
-        <!-- 曲名・アーティスト -->
+        <img src="assets/icons/music-note.png" alt="cover" class="mini-cover">
+
         <div class="mini-info">
-          <span class="mini-title">曲名</span><br>
+          <span class="mini-title">曲名</span>
           <span class="mini-artist">アーティスト名</span>
         </div>
-        <!-- コントロールボタン -->
+
         <div class="mini-controls">
           <button id="mini-playBtn" class="mini-playbtn">▶</button>
-          <button id="repeatBtn" class="mini-repeat-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-              <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd" />
-            </svg>
-          </button>
+
+          <button id="mini-repeat-Btn" class="mini-repeat-btn">🔁</button>
+
           <button id="mini-next" class="mini-next-btn">⏭</button>
         </div>
       </div>
-    </section> 
+    </section>
+
     <script src="https://alcdn.msauth.net/browser/2.32.0/js/msal-browser.min.js"></script>
     <script src="js/app.js" defer></script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js");
+      }
+    </script>
   </body>
 </html>
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
-</script>
+
 <style>
     body {
     background: var(--base-bg);
