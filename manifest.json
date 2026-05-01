@@ -1,17 +1,17 @@
 {
-  "name": "Music App",
+  "name": "Music Player",
   "short_name": "Music",
-  "start_url": "./",
+  "start_url": "/music-app/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "icons": []
-} [
+  "icons": [
     {
-      "src": "assets/icons/music-note.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     }
   ]
 }
+
 
