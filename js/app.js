@@ -36,12 +36,14 @@ const repeatBtn = document.getElementById('mini-repeatBtn');
 // ==========================
 
 window.addEventListener("load", async () => {
+  
   const offlineSongs = await getOfflineSongs();
 
   if (offlineSongs.length > 0) {
+    showLoading();
     // UI に表示
     renderSongList(offlineSongs);
-
+    hideLoading();
     // 自動再生開始
     startOfflinePlaylist(offlineSongs);
   }
