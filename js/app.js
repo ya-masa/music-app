@@ -340,9 +340,13 @@ function renderSongList(songs, targetId, allSongs) {
     `;
 
     // 再生
-    div.querySelector(".song-info").addEventListener("click", () => {
+    div.addEventListener("click", (e) => {
+      // 保存ボタンや削除ボタンを押したときは再生しない
+      if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
+
       playSong(song);
     });
+
 
     // 保存
     div.querySelector(".save-btn").addEventListener("click", async () => {
