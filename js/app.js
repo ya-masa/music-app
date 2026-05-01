@@ -13,6 +13,7 @@ let accessToken = null;
 
 // ログイン処理
 function login() {
+  showLoading();
   msalInstance.loginPopup({
     scopes: ["Files.Read"]
   }).then(result => {
@@ -27,8 +28,11 @@ function login() {
     console.log("アクセストークン取得", accessToken);
 
     loadOneDriveMusic();
+    hideLoading();
+    
   }).catch(err => {
     console.error(err);
+    hideLoading();
   });
 }
 
@@ -54,6 +58,15 @@ async function loadOneDriveMusic() {
   } else {
     console.log("再生できる音楽ファイルがありません");
   }
+}
+
+//ローディング中表示
+function showLoading() {
+  document.getElementById("loading").style.display = "flex";
+}
+//ローディング中表示の停止
+function hideLoading() {
+  document.getElementById("loading").style.display = "none";
 }
 
 async function getFilesRecursively(itemId) {

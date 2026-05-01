@@ -1,4 +1,5 @@
 {
+  "id": "/music-app/",
   "name": "Music Player",
   "short_name": "Music",
   "start_url": "/music-app/",
