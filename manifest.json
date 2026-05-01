@@ -2,16 +2,22 @@
   "name": "Music Player",
   "short_name": "Music",
   "start_url": "/music-app/",
+  "scope": "/music-app/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "description": "OneDrive の音楽を再生・保存できる PWA 音楽プレイヤー",
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
-
 
