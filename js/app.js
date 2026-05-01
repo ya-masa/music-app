@@ -247,52 +247,51 @@ function formatTime(seconds) {
 
 //曲一覧表示
 //オフライン再生
-function renderSongList(songs) {
-  const list = document.getElementById("songList");
-  list.innerHTML = "";
+async function renderAllLists(oneDriveSongs) {
+  const offlineNames = await getOfflineSongs();
 
-  songs.forEach(async song => {
+  // ① オフライン曲一覧
+  const offlineList = document.getElementById("offlineList");
+  offlineList.innerHTML = "";
+
+  offlineNames.forEach(name => {
     const div = document.createElement("div");
     div.className = "song-item";
-
-    const offline = await isSongOffline(song.name);
-    const coverUrl = await getCoverImage(song);
-
     div.innerHTML = `
-      <img src="${coverUrl}" class="song-cover">
+      <div class="song-title">${name}</div>
+      <button class="delete-btn">🗑</button>
+    `;
+    div.querySelector(".delete-btn").addEventListener("click", async () => {
+      await deleteSongOffline({ name });
+      renderAllLists(oneDriveSongs);
+    });
+    offlineList.appendChild(div);
+  });
 
-      <div class="song-info">
-        <div class="song-title">${song.name}</div>
-        <div class="song-artist">${song.parentReference?.path?.split("/").pop() || "Unknown"}</div>
-      </div>
+  // ② OneDrive の曲一覧（未保存）
+  const cloudList = document.getElementById("cloudList");
+  cloudList.innerHTML = "";
 
-      <button class="save-btn">${offline ? "✓ 保存済み" : "↓ 保存"}</button>
-      ${offline ? `<button class="delete-btn">🗑</button>` : ""}
+  oneDriveSongs.forEach(song => {
+    const isOffline = offlineNames.includes(song.name);
+
+    const div = document.createElement("div");
+    div.className = "song-item";
+    div.innerHTML = `
+      <div class="song-title">${song.name}</div>
+      ${isOffline ? "✓ 保存済み" : `<button class="save-btn">↓ 保存</button>`}
     `;
 
-    // 再生
-    div.querySelector(".song-info").addEventListener("click", () => {
-      playSong(song);
-    });
-
-    // 保存
-    div.querySelector(".save-btn").addEventListener("click", async () => {
-      await saveSongOffline(song);
-      renderSongList(songs);
-    });
-
-    // 削除
-    if (offline) {
-      div.querySelector(".delete-btn").addEventListener("click", async () => {
-        await deleteSongOffline(song);
-        renderSongList(songs);
+    if (!isOffline) {
+      div.querySelector(".save-btn").addEventListener("click", async () => {
+        await saveSongOffline(song);
+        renderAllLists(oneDriveSongs);
       });
     }
 
-    list.appendChild(div);
+    cloudList.appendChild(div);
   });
 }
-
 
 
 //オフライン再生曲削除
@@ -314,7 +313,7 @@ async function deleteSongOffline(song) {
 //曲表示名変更
 function updateNowPlayingUI(song) {
   const title = song.name;
-  const artist = song.parentReference?.path?.split("/").pop() || "Unknown";
+  const artist = getArtistName(song);
 
   // 大きい再生画面
   document.querySelector(".np-title").textContent = title;
@@ -324,6 +323,17 @@ function updateNowPlayingUI(song) {
   document.querySelector(".mini-title").textContent = title;
   document.querySelector(".mini-artist").textContent = artist;
 }
+
+//歌手名
+function getArtistName(song) {
+  const path = song.parentReference?.path || "";
+  const parts = path.split("/");
+
+  // 例: ["drive", "root:", "music", "宇多田ヒカル", "First Love"]
+  // アーティスト名は index 3
+  return parts[3] || "Unknown";
+}
+
 
 //曲名スクロール
 function enableScrollIfNeeded(selector) {
@@ -355,4 +365,15 @@ async function getCoverImage(song) {
   return image
     ? image["@microsoft.graph.downloadUrl"]
     : "assets/icons/music-note.png";
+}
+
+//オフライン曲を探す
+async function getOfflineSongs() {
+  const cache = await caches.open("music-app-v1");
+  const keys = await cache.keys();
+
+  // 曲データだけ抽出（cover は除外）
+  return keys
+    .filter(req => req.url.includes("/offline/") && !req.url.includes("-cover"))
+    .map(req => decodeURIComponent(req.url.split("/offline/")[1]));
 }

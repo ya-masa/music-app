@@ -14,36 +14,12 @@
 
     <main class="home">
       <button onclick="login()">OneDrive にログイン</button>
-      <section class="card-section">
-        <h2 class="section-title">プレイリスト</h2>
-        <div class="card-row">
-          <div class="card">
-            <img src="assets/icons/music-note.png" class="card-icon">
-            <div class="card-title">曲名サンプル</div>
-          </div>
-          <div class="card">
-            <img src="assets/icons/music-note.png" class="card-icon">
-            <div class="card-title">曲名サンプル</div>
-          </div>
-          <div class="card">
-            <img src="assets/icons/music-note.png" class="card-icon">
-            <div class="card-title">曲名サンプル</div>
-          </div>
-        </div>
-      </section>
-      <section class="card-section">
-        <h2 class="section-title">最近再生した曲</h2>
-        <div class="card-row">
-          <div class="card">
-            <img src="assets/icons/music-note.png" class="card-icon">
-            <div class="card-title">最近の曲1</div>
-          </div>
-          <div class="card">
-            <img src="assets/icons/music-note.png" class="card-icon">
-            <div class="card-title">最近の曲2</div>
-          </div>
-        </div>
-      </section>
+      <h2>📥 オフライン保存済み</h2>
+      <div id="offlineList" class="song-list"></div>
+
+      <h2>☁ OneDrive の曲</h2>
+      <div id="cloudList" class="song-list"></div>
+
     </main>
     <section id="now-playing" class="screen">
 
