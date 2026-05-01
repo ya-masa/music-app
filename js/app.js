@@ -32,6 +32,69 @@ const currentTimeMini = document.getElementById('mini-currentTime');
 const repeatBtn = document.getElementById('mini-repeatBtn');
 
 // ==========================
+// 起動時の処理
+// ==========================
+
+window.addEventListener("load", async () => {
+  const offlineSongs = await getOfflineSongs();
+
+  if (offlineSongs.length > 0) {
+    // UI に表示
+    renderSongList(offlineSongs);
+
+    // 自動再生開始
+    startOfflinePlaylist(offlineSongs);
+  }
+});
+
+//オフライン曲の表示
+async function getOfflineSongs() {
+  const cache = await caches.open("music-app-v1");
+  const keys = await cache.keys();
+
+  const songs = [];
+
+  for (const request of keys) {
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
+      const fileName = url.pathname.replace("/offline/", "");
+
+      songs.push({
+        name: fileName,
+        url: request.url,
+        offline: true
+      });
+    }
+  }
+  return songs;
+}
+
+//  自動でオフライン曲を順番に流す
+let offlineIndex = 0;
+let offlinePlaylist = [];
+
+function startOfflinePlaylist(songs) {
+  offlinePlaylist = songs;
+  offlineIndex = 0;
+  playOfflineSong();
+}
+
+function playOfflineSong() {
+  const song = offlinePlaylist[offlineIndex];
+  const audio = document.getElementById("audioPlayer");
+
+  audio.src = song.url;
+  audio.play();
+
+  audio.onended = () => {
+    offlineIndex = (offlineIndex + 1) % offlinePlaylist.length;
+    playOfflineSong();
+  };
+}
+
+
+// ==========================
 // ログイン処理
 // ==========================
 function login() {
