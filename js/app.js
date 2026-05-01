@@ -223,7 +223,7 @@ playBtnMini.addEventListener('click', () => {
   }
 });
 
-// ミニプレイヤー更新
+// ミニプレイヤーシークバー更新
 audio.addEventListener('timeupdate', () => {
   const progress = (audio.currentTime / audio.duration) * 100;
   seekBarMini.value = progress;
@@ -232,7 +232,7 @@ audio.addEventListener('timeupdate', () => {
 });
 
 // リピート
-const repeatBtn = document.getElementById('repeatBtn');
+const repeatBtn = document.getElementById('mini-repeat-Btn');
 let isRepeat = false;
 
 repeatBtn.addEventListener('click', () => {
@@ -338,10 +338,6 @@ function updateNowPlayingUI(song) {
   const title = song.name;
   const artist = getArtistName(song);
 
-  // 大きい再生画面
-  document.querySelector(".np-title").textContent = title;
-  document.querySelector(".np-artist").textContent = artist;
-
   // ミニプレイヤー
   document.querySelector(".mini-title").textContent = title;
   document.querySelector(".mini-artist").textContent = artist;
@@ -354,7 +350,7 @@ function getArtistName(song) {
 
   // 例: ["drive", "root:", "music", "宇多田ヒカル", "First Love"]
   // アーティスト名は index 3
-  return parts[3] || "Unknown";
+  return parts[2] || "Unknown";
 }
 
 
