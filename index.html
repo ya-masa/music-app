@@ -115,15 +115,6 @@
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
-fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music:/children", {
-  headers: {
-    Authorization: `Bearer ${accessToken}`
-  }
-})
-  .then(res => res.json())
-  .then(data => {
-    console.log(data.value); // ← 曲の一覧
-  });
 </script>
 <style>
     body {
