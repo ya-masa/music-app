@@ -387,5 +387,5 @@ async function getCoverImage(song) {
   // ★画像がない時はデフォルト画像を返す
   return image
     ? image["@microsoft.graph.downloadUrl"]
-    : "assets/icons/music-note.png";
+    : "assets/images/music-note.png";
 }
