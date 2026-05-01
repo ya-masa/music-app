@@ -69,21 +69,21 @@ body {
   background: rgba(0,0,0,0.05);
 }
 
-.song-cover {
+.np-cover {
   width: 48px;
   height: 48px;
   border-radius: 6px;
   object-fit: cover;
 }
 
-.song-info {
+.np-info {
   display: flex;
   flex-direction: column;
   flex: 1;
   overflow: hidden;
 }
 
-.song-title {
+.np-title {
   font-size: 16px;
   font-weight: bold;
   color: var(--text-main);
@@ -92,7 +92,7 @@ body {
   text-overflow: ellipsis;
 }
 
-.song-artist {
+.np-artist {
   font-size: 14px;
   color: #666;
   white-space: nowrap;
