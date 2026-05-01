@@ -50,7 +50,7 @@ async function loadOneDriveMusic() {
 
   console.log("見つかった音楽ファイル", songs);
 
-  renderAllList(songs);  // ← 追加
+  renderAllLists(songs);  // ← 追加
 
   if (songs.length > 0) {
     playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
