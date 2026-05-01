@@ -13,12 +13,11 @@ let accessToken = null;
 
 // ログイン処理
 function login() {
-  showLoading();
+  alert("Microsoft のログイン画面に移動します");
   msalInstance.loginPopup({
     scopes: ["Files.Read"]
   }).then(result => {
     console.log("ログイン成功", result);
-
     return msalInstance.acquireTokenSilent({
       scopes: ["Files.Read"],
       account: result.account
@@ -26,7 +25,7 @@ function login() {
   }).then(tokenResponse => {
     accessToken = tokenResponse.accessToken;
     console.log("アクセストークン取得", accessToken);
-
+    showLoading();
     loadOneDriveMusic();
     hideLoading();
 
