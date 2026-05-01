@@ -45,8 +45,8 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/music-app/offline/") && !url.pathname.endsWith("-cover")) {
-      const fileName = url.pathname.replace("/music-app/offline/", "");
+    if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
+      const fileName = url.pathname.replace("/offline/", "");
 
       songs.push({
         name: fileName,
@@ -88,8 +88,9 @@ window.addEventListener("load", async () => {
   console.log("Offline songs:", offlineSongs); // ←デバッグ用
 
   if (offlineSongs.length > 0) {
-    showLoading();
-    getOfflineSongs();//オフライン曲の表示
+    showLoading();  
+    // まずオフライン曲だけ表示
+    renderSongList(offlineSongs, "offlineSongs");
     hideLoading();
     startOfflinePlaylist(offlineSongs);//曲再生
 
