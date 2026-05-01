@@ -29,7 +29,7 @@ function login() {
 
     loadOneDriveMusic();
     hideLoading();
-    
+
   }).catch(err => {
     console.error(err);
     hideLoading();
@@ -183,24 +183,6 @@ async function playSong(song) {
   isPlaying = true;
   playBtn.textContent = '⏸';
 }
-
-// 再生ボタン
-const playBtn = document.getElementById('playBtn');
-const seekBar = document.getElementById('seekBar');
-const time = document.getElementById('duration');
-const currentTimeEl = document.getElementById('currentTime');
-
-playBtn.addEventListener('click', () => {
-  if (!isPlaying) {
-    audio.play();
-    playBtn.textContent = '⏸';
-    isPlaying = true;
-  } else {
-    audio.pause();
-    playBtn.textContent = '▶';
-    isPlaying = false;
-  }
-});
 
 //曲がオフライン保存されているかチェックする
 async function isSongOffline(fileName) {

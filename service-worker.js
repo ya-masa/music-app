@@ -2,12 +2,13 @@ const CACHE_NAME = "music-app-v1";
 
 // 初期キャッシュ（アプリ本体）
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/style/main.css",
-  "/js/app.js",
-  "/assets/icons/music-note.png"
+  "/music-app/",
+  "/music-app/index.html",
+  "/music-app/style/main.css",
+  "/music-app/js/app.js",
+  "/music-app/assets/icons/music-note.png"
 ];
+
 
 // ==========================
 // ① インストール（アプリ本体をキャッシュ）
