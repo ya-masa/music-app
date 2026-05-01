@@ -69,6 +69,58 @@ body {
   background: rgba(0,0,0,0.05);
 }
 
+.song-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.song-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.song-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-artist {
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 保存・削除ボタン */
+.save-btn, .delete-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background: #d0e8ff;
+  color: #004a88;
+}
+
+.delete-btn {
+  background: #ffe0e0;
+  color: #aa0000;
+}
+/*==========================
+  プレイヤー
+========================== */
 .np-cover {
   width: 48px;
   height: 48px;
@@ -99,26 +151,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* 保存・削除ボタン */
-.save-btn, .delete-btn {
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.save-btn {
-  background: #d0e8ff;
-  color: #004a88;
-}
-
-.delete-btn {
-  background: #ffe0e0;
-  color: #aa0000;
-}
-
 /* ==========================
    ミニプレイヤー
 ========================== */
