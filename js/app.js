@@ -25,12 +25,10 @@ function login() {
   }).then(tokenResponse => {
     accessToken = tokenResponse.accessToken;
     console.log("アクセストークン取得", accessToken);
-    showLoading();//ローディング中表示
+
     loadOneDriveMusic();
-    hideLoading();//ローディング中の表示停止
   }).catch(err => {
     console.error(err);
-    hideLoading();//ローディング中の表示停止
   });
 }
 
@@ -49,7 +47,7 @@ async function loadOneDriveMusic() {
 
   console.log("見つかった音楽ファイル", songs);
 
-  renderAllLists(songs); // ← 追加
+  renderAllList(songs);  // ← 追加
 
   if (songs.length > 0) {
     playFromOneDrive(songs[0]["@microsoft.graph.downloadUrl"]);
@@ -57,7 +55,7 @@ async function loadOneDriveMusic() {
     console.log("再生できる音楽ファイルがありません");
   }
 }
-//フォルダ内を検索
+
 async function getFilesRecursively(itemId) {
   const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/children`, {
     headers: { Authorization: `Bearer ${accessToken}` }
@@ -77,16 +75,6 @@ async function getFilesRecursively(itemId) {
 
   return files;
 }
-
-//ローディング中表示
-function showLoading() {
-  document.getElementById("loading").style.display = "flex";
-}
-//ローディング中表示の停止
-function hideLoading() {
-  document.getElementById("loading").style.display = "none";
-}
-
 
 //曲をオフライン保存する
 async function saveSongOffline(song) {
@@ -112,6 +100,15 @@ async function saveSongOffline(song) {
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
 }
 
+//オフライン曲を取得
+async function getOfflineSongs() {
+  const cache = await caches.open("music-app-v1");
+  const keys = await cache.keys();
+
+  return keys
+    .filter(req => req.url.includes("/offline/") && !req.url.includes("-cover"))
+    .map(req => decodeURIComponent(req.url.split("/offline/")[1]));
+}
 
 
 // ==========================
@@ -259,51 +256,71 @@ function formatTime(seconds) {
 
 //曲一覧表示
 //オフライン再生
-async function renderAllLists(oneDriveSongs) {
-  const offlineNames = await getOfflineSongs();
+function renderSongList(songs, targetId) {
+  const list = document.getElementById(targetId);
+  list.innerHTML = "";
 
-  // ① オフライン曲一覧
-  const offlineList = document.getElementById("offlineList");
-  offlineList.innerHTML = "";
-
-  offlineNames.forEach(name => {
+  songs.forEach(async song => {
     const div = document.createElement("div");
     div.className = "song-item";
+
+    const offline = await isSongOffline(song.name);
+    const coverUrl = await getCoverImage(song);
+
     div.innerHTML = `
-      <div class="song-title">${name}</div>
-      <button class="delete-btn">🗑</button>
+      <img src="${coverUrl}" class="song-cover">
+
+      <div class="song-info">
+        <div class="song-title">${song.name}</div>
+        <div class="song-artist">${song.parentReference?.path?.split("/")[3] || "Unknown"}</div>
+      </div>
+
+      <button class="save-btn">${offline ? "✓ 保存済み" : "↓ 保存"}</button>
+      ${offline ? `<button class="delete-btn">🗑</button>` : ""}
     `;
-    div.querySelector(".delete-btn").addEventListener("click", async () => {
-      await deleteSongOffline({ name });
-      renderAllLists(oneDriveSongs);
+
+    // 再生
+    div.querySelector(".song-info").addEventListener("click", () => {
+      playSong(song);
     });
-    offlineList.appendChild(div);
-  });
 
-  // ② OneDrive の曲一覧（未保存）
-  const cloudList = document.getElementById("cloudList");
-  cloudList.innerHTML = "";
+    // 保存
+    div.querySelector(".save-btn").addEventListener("click", async () => {
+      await saveSongOffline(song);
+      renderAllLists(songs); // ← 後で作る
+    });
 
-  oneDriveSongs.forEach(song => {
-    const isOffline = offlineNames.includes(song.name);
-
-    const div = document.createElement("div");
-    div.className = "song-item";
-    div.innerHTML = `
-      <div class="song-title">${song.name}</div>
-      ${isOffline ? "✓ 保存済み" : `<button class="save-btn">↓ 保存</button>`}
-    `;
-
-    if (!isOffline) {
-      div.querySelector(".save-btn").addEventListener("click", async () => {
-        await saveSongOffline(song);
-        renderAllLists(oneDriveSongs);
+    // 削除
+    if (offline) {
+      div.querySelector(".delete-btn").addEventListener("click", async () => {
+        await deleteSongOffline(song);
+        renderAllLists(songs);
       });
     }
 
-    cloudList.appendChild(div);
+    list.appendChild(div);
   });
 }
+
+//オフライン曲、ダウンロード曲、抽出
+async function renderAllLists(oneDriveSongs) {
+  const offlineNames = await getOfflineSongs();
+
+  // ① オフライン曲だけ抽出
+  const offlineSongs = oneDriveSongs.filter(song =>
+    offlineNames.includes(song.name)
+  );
+
+  // ② 未保存の曲だけ抽出
+  const cloudSongs = oneDriveSongs.filter(song =>
+    !offlineNames.includes(song.name)
+  );
+
+  // ③ それぞれ描画
+  renderSongList(offlineSongs, "offlineList");
+  renderSongList(cloudSongs, "cloudList");
+}
+
 
 
 //オフライン再生曲削除
@@ -377,15 +394,4 @@ async function getCoverImage(song) {
   return image
     ? image["@microsoft.graph.downloadUrl"]
     : "assets/icons/music-note.png";
-}
-
-//オフライン曲を探す
-async function getOfflineSongs() {
-  const cache = await caches.open("music-app-v1");
-  const keys = await cache.keys();
-
-  // 曲データだけ抽出（cover は除外）
-  return keys
-    .filter(req => req.url.includes("/offline/") && !req.url.includes("-cover"))
-    .map(req => decodeURIComponent(req.url.split("/offline/")[1]));
 }
