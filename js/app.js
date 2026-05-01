@@ -48,7 +48,7 @@ async function getOfflineSongs() {
     if (url.pathname.includes("/offline/") && !url.pathname.endsWith("-cover")) {
 
       const fullKey = url.pathname.split("/").pop(); // ID__ファイル名
-      const fileName = fullKey.split("__")[1];       // ファイル名だけ取り出す
+      const fileName = decodeURIComponent(fullKey.split("__")[1]);       // ファイル名だけ取り出す
 
       songs.push({
         name: fileName,
