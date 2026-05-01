@@ -416,20 +416,38 @@ function enableScrollIfNeeded(selector) {
 
 // ジャケット画像取得
 async function getCoverImage(song) {
-  const parentId = song.parentReference.id;
+  try {
+    // parentReference が無い場合はデフォルト画像
+    if (!song.parentReference || !song.parentReference.id) {
+      return "assets/images/music-note.png";
+    }
 
-  const res = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}/children`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+    const parentId = song.parentReference.id;
 
-  const data = await res.json();
+    const res = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}/children`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
 
-  const image = data.value.find(item =>
-    item.name.match(/\.(jpg|jpeg|png)$/i)
-  );
+    const data = await res.json();
 
-  return image
-    ? image["@microsoft.graph.downloadUrl"]
-    : "assets/images/music-note.png";
+    // API エラー時
+    if (!data || !data.value) {
+      return "assets/images/music-note.png";
+    }
+
+    // jpg / png を探す
+    const image = data.value.find(item =>
+      item.name && item.name.match(/\.(jpg|jpeg|png)$/i)
+    );
+
+    return image
+      ? image["@microsoft.graph.downloadUrl"]
+      : "assets/images/music-note.png";
+
+  } catch (err) {
+    console.error("カバー画像取得エラー:", err);
+    return "assets/images/music-note.png";
+  }
 }
+
