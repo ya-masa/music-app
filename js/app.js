@@ -90,7 +90,7 @@ window.addEventListener("load", async () => {
   if (offlineSongs.length > 0) {
     showLoading();  
     // まずオフライン曲だけ表示
-    renderSongList(offlineSongs, "offlineSongs");
+    renderSongList(offlineSongs, "offlineList", offlineSongs);
     hideLoading();
     startOfflinePlaylist(offlineSongs);//曲再生
 
@@ -376,7 +376,7 @@ function formatTime(seconds) {
 // ==========================
 // 曲一覧表示
 // ==========================
-function renderSongList(songs, targetId, allSongs) {
+function renderSongList(songs, targetId, allSongs = null) {
   const list = document.getElementById(targetId);
   if (!list) return;
 
