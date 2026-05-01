@@ -340,7 +340,7 @@ function renderSongList(songs, targetId, allSongs) {
     `;
 
     // 再生
-    div.addEventListener("click", (e) => {
+    div.querySelector(".song-item").addEventListener("click", () => {
       // 保存ボタンや削除ボタンを押したときは再生しない
       if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
 
