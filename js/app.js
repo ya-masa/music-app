@@ -277,6 +277,7 @@ async function playSong(song) {
 div.addEventListener("click", (e) => {
   if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
   playSong(song);
+  playOfflineSong();
 });
 
 
