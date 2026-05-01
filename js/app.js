@@ -25,10 +25,12 @@ function login() {
   }).then(tokenResponse => {
     accessToken = tokenResponse.accessToken;
     console.log("アクセストークン取得", accessToken);
-
+    showLoading();//ローディング中表示
     loadOneDriveMusic();
+    hideLoading();//ローディング中の表示停止
   }).catch(err => {
     console.error(err);
+    hideLoading();//ローディング中の表示停止
   });
 }
 
@@ -55,7 +57,7 @@ async function loadOneDriveMusic() {
     console.log("再生できる音楽ファイルがありません");
   }
 }
-
+//フォルダ内を検索
 async function getFilesRecursively(itemId) {
   const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/children`, {
     headers: { Authorization: `Bearer ${accessToken}` }
@@ -75,6 +77,16 @@ async function getFilesRecursively(itemId) {
 
   return files;
 }
+
+//ローディング中表示
+function showLoading() {
+  document.getElementById("loading").style.display = "flex";
+}
+//ローディング中表示の停止
+function hideLoading() {
+  document.getElementById("loading").style.display = "none";
+}
+
 
 //曲をオフライン保存する
 async function saveSongOffline(song) {
