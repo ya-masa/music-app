@@ -34,8 +34,8 @@ function login() {
 
 //フォルダの中の全 .m4a を集める
 async function loadOneDriveMusic() {
-  // Music フォルダの ID を取得
-    const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/", {
+  // Music フォルダの ID を取得"https://graph.microsoft.com/v1.0/me/drive/root:/music"
+    const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   const musicFolder = await res.json();
