@@ -45,8 +45,8 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const fileName = url.pathname.replace("/offline/", "");
+    if (url.pathname.startsWith("/music-app/offline/") && !url.pathname.endsWith("-cover")) {
+      const fileName = url.pathname.replace("/music-app/offline/", "");
 
       songs.push({
         name: fileName,
