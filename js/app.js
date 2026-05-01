@@ -277,13 +277,6 @@ async function playSong(song) {
   if (playBtnMini) playBtnMini.textContent = '⏸';
 }
 
-//曲カードを押すと再生開始
-div.addEventListener("click", (e) => {
-  if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
-  playSong(song);
-  playOfflineSong();
-});
-
 
 // ==========================
 // プレイヤー共通イベント
@@ -411,6 +404,7 @@ function renderSongList(songs, targetId, allSongs) {
     div.addEventListener("click", (e) => {
       if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
       playSong(song);
+      playOfflineSong();
     });
 
 
