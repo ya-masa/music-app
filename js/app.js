@@ -29,7 +29,7 @@ const playBtnMini = document.getElementById('mini-playBtn');
 const seekBarMini = document.getElementById('mini-seekBar');
 const timeMini = document.getElementById('mini-duration');
 const currentTimeMini = document.getElementById('mini-currentTime');
-const repeatBtn = document.getElementById('mini-repeat-Btn');
+const repeatBtn = document.getElementById('mini-repeatBtn');
 
 // ==========================
 // ログイン処理
@@ -209,6 +209,13 @@ async function playSong(song) {
   if (playBtn) playBtn.textContent = '⏸';
   if (playBtnMini) playBtnMini.textContent = '⏸';
 }
+
+//曲カードを押すと再生開始
+div.addEventListener("click", (e) => {
+  if (e.target.closest(".save-btn") || e.target.closest(".delete-btn")) return;
+  playSong(song);
+});
+
 
 // ==========================
 // プレイヤー共通イベント
