@@ -350,7 +350,7 @@ function getArtistName(song) {
 
   // 例: ["drive", "root:", "music", "宇多田ヒカル", "First Love"]
   // アーティスト名は index 3
-  return parts[2] || "Unknown";
+  return parts[4] || "Unknown";
 }
 
 
