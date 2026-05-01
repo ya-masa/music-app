@@ -32,10 +32,10 @@ function login() {
   });
 }
 
-// Music フォルダの中の全 .m4a を集める
+//フォルダの中の全 .m4a を集める
 async function loadOneDriveMusic() {
-  // Music フォルダの ID を取得
-  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
+  // Music フォルダの ID を取得"https://graph.microsoft.com/v1.0/me/drive/root:/music"
+  const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   const musicFolder = await res.json();
@@ -76,6 +76,31 @@ async function getFilesRecursively(itemId) {
   return files;
 }
 
+//曲をオフライン保存する
+async function saveSongOffline(song) {
+  const fileName = song.name;
+
+  // ① 曲データを取得
+  const songRes = await fetch(song["@microsoft.graph.downloadUrl"]);
+  const songBlob = await songRes.blob();
+
+  // ② ジャケット画像URLを取得
+  const coverUrl = await getCoverImage(song);
+
+  // ③ ジャケット画像を取得
+  const coverRes = await fetch(coverUrl);
+  const coverBlob = await coverRes.blob();
+
+  // ④ キャッシュに保存
+  const cache = await caches.open("music-app-v1");
+
+  await cache.put(`/offline/${fileName}`, new Response(songBlob));
+  await cache.put(`/offline/${fileName}-cover`, new Response(coverBlob));
+
+  alert(`${fileName} とジャケット画像をオフライン保存しました`);
+}
+
+
 
 // ==========================
 // ② 音楽プレイヤー部分
@@ -92,6 +117,49 @@ function playFromOneDrive(url) {
   isPlaying = true;
   playBtn.textContent = '⏸';
   console.log("再生開始:", url);
+}
+
+//オフライン再生用プレーヤー
+async function playSong(song) {
+  const fileName = song.name;
+  const offline = await caches.match(`/offline/${fileName}`);
+
+  // UI 更新（曲名・アーティスト）
+  updateNowPlayingUI(song);
+  enableScrollIfNeeded(".np-title");
+  enableScrollIfNeeded(".mini-title");
+  // アーティスト名スクロール
+  enableScrollIfNeeded(".np-artist");
+  enableScrollIfNeeded(".mini-artist");
+
+  // ★ ジャケット画像を取得して反映　ジャケット画像（オフライン優先）
+  const coverOffline = await caches.match(`/offline/${song.name}-cover`);
+
+  if (coverOffline) {
+    const blob = await coverOffline.blob();
+    const url = URL.createObjectURL(blob);
+    document.querySelector(".np-cover").src = url;
+    document.querySelector(".mini-cover").src = url;
+  } else {
+    const coverUrl = await getCoverImage(song);
+    document.querySelector(".np-cover").src = coverUrl;
+    document.querySelector(".mini-cover").src = coverUrl;
+  }
+
+  if (offline) {
+    // オフライン再生
+    const blob = await offline.blob();
+    audio.src = URL.createObjectURL(blob);
+    console.log("オフライン再生:", fileName);
+  } else {
+    // OneDrive から再生
+    audio.src = song["@microsoft.graph.downloadUrl"];
+    console.log("オンライン再生:", fileName);
+  }
+
+  audio.play();
+  isPlaying = true;
+  playBtn.textContent = '⏸';
 }
 
 // 再生ボタン
@@ -111,6 +179,12 @@ playBtn.addEventListener('click', () => {
     isPlaying = false;
   }
 });
+
+//曲がオフライン保存されているかチェックする
+async function isSongOffline(fileName) {
+  const cached = await caches.match(`/offline/${fileName}`);
+  return !!cached;
+}
 
 // シークバー更新
 audio.addEventListener('timeupdate', () => {
@@ -172,23 +246,113 @@ function formatTime(seconds) {
 }
 
 //曲一覧表示
+//オフライン再生
 function renderSongList(songs) {
   const list = document.getElementById("songList");
-  list.innerHTML = ""; // 一旦クリア
+  list.innerHTML = "";
 
-  songs.forEach(song => {
+  songs.forEach(async song => {
     const div = document.createElement("div");
     div.className = "song-item";
 
+    const offline = await isSongOffline(song.name);
+    const coverUrl = await getCoverImage(song);
+
     div.innerHTML = `
-      <div class="song-title">${song.name}</div>
+      <img src="${coverUrl}" class="song-cover">
+
+      <div class="song-info">
+        <div class="song-title">${song.name}</div>
+        <div class="song-artist">${song.parentReference?.path?.split("/").pop() || "Unknown"}</div>
+      </div>
+
+      <button class="save-btn">${offline ? "✓ 保存済み" : "↓ 保存"}</button>
+      ${offline ? `<button class="delete-btn">🗑</button>` : ""}
     `;
 
-    // クリックで再生
-    div.addEventListener("click", () => {
-      playFromOneDrive(song["@microsoft.graph.downloadUrl"]);
+    // 再生
+    div.querySelector(".song-info").addEventListener("click", () => {
+      playSong(song);
     });
+
+    // 保存
+    div.querySelector(".save-btn").addEventListener("click", async () => {
+      await saveSongOffline(song);
+      renderSongList(songs);
+    });
+
+    // 削除
+    if (offline) {
+      div.querySelector(".delete-btn").addEventListener("click", async () => {
+        await deleteSongOffline(song);
+        renderSongList(songs);
+      });
+    }
 
     list.appendChild(div);
   });
+}
+
+
+
+//オフライン再生曲削除
+async function deleteSongOffline(song) {
+  const fileName = song.name;
+  const cache = await caches.open("music-app-v1");
+
+  const deletedSong = await cache.delete(`/offline/${fileName}`);
+  const deletedCover = await cache.delete(`/offline/${fileName}-cover`);
+
+  if (deletedSong || deletedCover) {
+    alert(`${fileName} のオフラインデータを削除しました`);
+  } else {
+    alert(`${fileName} はオフライン保存されていません`);
+  }
+}
+
+
+//曲表示名変更
+function updateNowPlayingUI(song) {
+  const title = song.name;
+  const artist = song.parentReference?.path?.split("/").pop() || "Unknown";
+
+  // 大きい再生画面
+  document.querySelector(".np-title").textContent = title;
+  document.querySelector(".np-artist").textContent = artist;
+
+  // ミニプレイヤー
+  document.querySelector(".mini-title").textContent = title;
+  document.querySelector(".mini-artist").textContent = artist;
+}
+
+//曲名スクロール
+function enableScrollIfNeeded(selector) {
+  const el = document.querySelector(selector);
+  if (el.scrollWidth > el.clientWidth) {
+    el.classList.add("scroll-text");
+  } else {
+    el.classList.remove("scroll-text");
+  }
+}
+
+//画像がない時はデフォルト画像を表示
+async function getCoverImage(song) {
+  const parentId = song.parentReference.id;
+
+  const res = await fetch(
+    `https://graph.microsoft.com/v1.0/me/drive/items/${parentId}/children`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  const data = await res.json();
+
+  // jpg / png を探す
+  const image = data.value.find(item =>
+    item.name.match(/\.(jpg|jpeg|png)$/i)
+  );
+
+  // ★画像がない時はデフォルト画像を返す
+  return image
+    ? image["@microsoft.graph.downloadUrl"]
+    : "assets/icons/music-note.png";
 }

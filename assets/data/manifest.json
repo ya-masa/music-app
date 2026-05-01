@@ -1,11 +1,12 @@
 {
   "name": "Music App",
   "short_name": "Music",
-  "start_url": "index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "icons": [
+  "icons": []
+} [
     {
       "src": "assets/icons/music-note.png",
       "sizes": "192x192",
@@ -13,3 +14,4 @@
     }
   ]
 }
+

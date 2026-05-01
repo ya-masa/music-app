@@ -76,6 +76,7 @@
       <div id="songList" class="song-list"></div>
 
     </section>
+    
     <section id="mini-player" class="screen">
       <!-- シークバー -->
       <div class="mini-progress">
@@ -111,10 +112,10 @@
   </body>
 </html>
 <script>
-  if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
-fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
+fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music:/children", {
   headers: {
     Authorization: `Bearer ${accessToken}`
   }
@@ -356,4 +357,96 @@ fetch("https://graph.microsoft.com/v1.0/me/drive/root:/Music:/children", {
     transform: translateX(-50%);
   }
 }
+/* 曲リスト全体 */
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+/* 1曲分のカード */
+.song-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px var(--shadow-soft);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* タップ時の軽い反応 */
+.song-item:active {
+  background: rgba(0,0,0,0.05);
+}
+
+/* ジャケット画像（小） */
+.song-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* 曲名＋アーティストの縦並び */
+.song-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 曲名 */
+.song-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* アーティスト名 */
+.song-artist {
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 保存ボタン */
+.save-btn, .delete-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background: #d0e8ff;
+  color: #004a88;
+}
+
+.delete-btn {
+  background: #ffe0e0;
+  color: #aa0000;
+}
+
+/*曲名をスクロール*/
+.scroll-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 10s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 </style>
