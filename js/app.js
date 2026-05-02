@@ -237,6 +237,9 @@ async function getFilesRecursively(itemId) {
 // ★ song.id をキーにして、同名ファイルでも上書きされないようにする
 async function saveSongOffline(song) {
   const cache = await caches.open("music-app-v1");
+  console.log("song object:", song);
+  console.log("downloadUrl:", song["@microsoft.graph.downloadUrl"]);
+
 
   // OneDrive の name はすでにエンコード済みなので、そのまま使う
   const key = `${song.id}__${song.name}`;
