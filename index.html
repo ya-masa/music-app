@@ -83,9 +83,9 @@
     <script src="js/app.js" defer></script>
 
     <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("service-worker.js");
-      }
+      navigator.serviceWorker.register("/music-app/service-worker.js", {
+        scope: "/music-app/"
+      });
     </script>
   </body>
 </html>

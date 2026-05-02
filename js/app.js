@@ -102,7 +102,7 @@ function renderOfflineList(songs, targetId) {
 
     // cover は /offline/ID__name-cover のはず
 
-    const coverUrl = `/offline/${key}-cover`;
+    const coverUrl = song.url + "-cover";
 
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
