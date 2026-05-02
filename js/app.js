@@ -46,7 +46,7 @@ async function getOfflineSongs() {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const raw = decodeURIComponent(url.pathname.replace("/offline/", ""));
+      const raw = decodeURIComponent(url.pathname.replace("/music-app/offline/", ""));
 
       const [id, ...nameParts] = raw.split("__");
       const name = nameParts.join("__");
@@ -54,7 +54,7 @@ async function getOfflineSongs() {
       songs.push({
         id,
         name,
-        url: `/offline/${encodeURIComponent(id + "__" + name)}`,
+        url: `/music-app/offline/${encodeURIComponent(id + "__" + name)}`,
         offline: true
       });
     }
@@ -101,7 +101,7 @@ function renderOfflineList(songs, targetId) {
     div.className = "song-item";
 
     // cover は /offline/ID__name-cover のはず
-    const coverUrl = `/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
+    const coverUrl = `/music-app/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
 
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
@@ -264,8 +264,8 @@ async function deleteSongOffline(song) {
   // キャッシュキーを統一
   const key = `${song.id}__${song.name}`;
 
-  const deletedSong = await cache.delete(`/offline/${encodeURIComponent(key)}`);
-  const deletedCover = await cache.delete(`/offline/${encodeURIComponent(key)}-cover`);
+  const deletedSong = await cache.delete(`/music-app/offline/${encodeURIComponent(key)}`);
+  const deletedCover = await cache.delete(`/music-app/offline/${encodeURIComponent(key)}-cover`);
 
   if (deletedSong || deletedCover) {
     alert(`${song.name} のオフラインデータを削除しました`);
