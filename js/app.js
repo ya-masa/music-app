@@ -45,9 +45,9 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const raw = decodeURIComponent(url.pathname.replace("/offline/", ""));
-      const key = url.pathname.replace("/offline/", ""); // decode しない
+    if (url.pathname.startsWith("/music-app/offline/") && !url.pathname.endsWith("-cover")) {
+      const raw = decodeURIComponent(url.pathname.replace("/music-app/offline/", ""));
+      const key = url.pathname.replace("/music-app/offline/", ""); // decode しない
       const [id, ...nameParts] = key.split("__");
       const name = nameParts.join("__");
 
@@ -248,15 +248,15 @@ async function saveSongOffline(song) {
   const cache = await caches.open("music-app-v1");
   
   const key = `${song.id}__${song.name}`;
-  await cache.put(`/offline/${encodeURIComponent(key)}`, new Response(songBlob));
-  await cache.put(`/offline/${encodeURIComponent(key)}-cover`, new Response(coverBlob));
+  await cache.put(`/music-app/offline/${encodeURIComponent(key)}`, new Response(songBlob));
+  await cache.put(`/music-app/offline/${encodeURIComponent(key)}-cover`, new Response(coverBlob));
 
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
 }
 
 async function isSongOffline(song) {
   const cache = await caches.open("music-app-v1");
-  const cached = await cache.match(`/offline/${song.id}__${song.name}`);
+  const cached = await cache.match(`/music-app/offline/${song.id}__${song.name}`);
   return !!cached;
 }
 
@@ -293,7 +293,7 @@ async function playSong(song) {
   const cache = await caches.open("music-app-v1");
 
   // ジャケット画像（オフライン優先）
-  const coverOffline = await cache.match(`/offline/${song.id}-cover`);
+  const coverOffline = await cache.match(`/music-app/offline/${song.id}-cover`);
   if (coverOffline) {
     const blob = await coverOffline.blob();
     const url = URL.createObjectURL(blob);
@@ -306,7 +306,7 @@ async function playSong(song) {
   }
 
   // 曲本体（オフライン優先）
-  const offline = await cache.match(`/offline/${song.id}`);
+  const offline = await cache.match(`/music-app/offline/${song.id}`);
   if (offline) {
     const blob = await offline.blob();
     audio.src = URL.createObjectURL(blob);
