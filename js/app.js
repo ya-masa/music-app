@@ -245,7 +245,7 @@ async function saveSongOffline(song) {
   const url = `/music-app/offline/${key}`;
 
   // 音源を保存
-  const response = await fetch(song.url);
+  const response = await fetch(song["@microsoft.graph.downloadUrl"]);
   await cache.put(url, response);
 
   // cover を保存（存在する場合）
