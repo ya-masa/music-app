@@ -54,7 +54,7 @@ async function getOfflineSongs() {
       songs.push({
         id,
         name,
-        url: `/music-app/offline/${encodeURIComponent(id + "__" + name)}`,
+        url: `/offline/${encodeURIComponent(id + "__" + name)}`,
         offline: true
       });
     }
