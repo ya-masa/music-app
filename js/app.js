@@ -46,7 +46,7 @@ async function getOfflineSongs() {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const raw = decodeURIComponent(url.pathname.replace("/music-app/offline/", ""));
+      const raw = decodeURIComponent(url.pathname.replace("/offline/", ""));
 
       const [id, ...nameParts] = raw.split("__");
       const name = nameParts.join("__");
@@ -101,7 +101,7 @@ function renderOfflineList(songs, targetId) {
     div.className = "song-item";
 
     // cover は /offline/ID__name-cover のはず
-    const coverUrl = `/music-app/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
+    const coverUrl = `/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
 
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
