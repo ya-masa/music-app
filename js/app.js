@@ -251,7 +251,7 @@ const cache = await caches.open("music-app-v1");
   const coverResponse = await fetch(song.coverUrl);
   await cache.put(url + "-cover", coverResponse);
 
-  alert(`${fileName} とジャケット画像をオフライン保存しました`);
+  alert(`${song.Name} とジャケット画像をオフライン保存しました`);
 }
 
 async function isSongOffline(song) {
