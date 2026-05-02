@@ -103,12 +103,12 @@ function renderOfflineList(songs, targetId) {
     // cover は /offline/ID__name-cover のはず
 
     const coverUrl = song.url + "-cover";
-
+    const songName = decodeURIComponent(song.name);
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
 
       <div class="song-info">
-        <div class="song-title">${song.name}</div>
+        <div class="song-title">${songName}</div>
         <div class="song-artist">オフライン保存</div>
       </div>
 

@@ -27,7 +27,7 @@ self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
   // ★ オフライン保存した曲（/offline/xxx）を優先的に返す
-  if (url.pathname.startsWith("/offline/")) {
+  if (url.pathname.startsWith("/music-app/offline/")) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         return cached || fetch(event.request);
