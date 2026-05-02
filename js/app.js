@@ -128,7 +128,7 @@ window.addEventListener("load", async () => {
   if (offlineSongs.length > 0) {
     showLoading();  
     // まずオフライン曲だけ表示
-    renderofflineList(offlineSongs, "offlineList");
+    renderOfflineList(offlineSongs, "offlineList");
     hideLoading();
     startOfflinePlaylist(offlineSongs);//曲再生
 
