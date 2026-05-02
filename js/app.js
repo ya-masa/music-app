@@ -47,14 +47,14 @@ async function getOfflineSongs() {
 
     if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
       const raw = decodeURIComponent(url.pathname.replace("/offline/", ""));
-
-      const [id, ...nameParts] = raw.split("__");
+      const key = url.pathname.replace("/offline/", ""); // decode しない
+      const [id, ...nameParts] = key.split("__");
       const name = nameParts.join("__");
 
       songs.push({
         id,
         name,
-        url: url,
+        url: request.url,
         offline: true
       });
     }
@@ -101,7 +101,8 @@ function renderOfflineList(songs, targetId) {
     div.className = "song-item";
 
     // cover は /offline/ID__name-cover のはず
-    const coverUrl = `/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
+
+    const coverUrl = `/offline/${key}-cover`;
 
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
