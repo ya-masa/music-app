@@ -246,16 +246,17 @@ async function saveSongOffline(song) {
   const coverBlob = await coverRes.blob();
 
   const cache = await caches.open("music-app-v1");
-
-  await cache.put(`/offline/${songId}`, new Response(songBlob));
-  await cache.put(`/offline/${songId}-cover`, new Response(coverBlob));
+  
+  const key = `${song.id}__${song.name}`;
+  await cache.put(`/offline/${encodeURIComponent(key)}`, new Response(songBlob));
+  await cache.put(`/offline/${encodeURIComponent(key)}-cover`, new Response(coverBlob));
 
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
 }
 
 async function isSongOffline(song) {
   const cache = await caches.open("music-app-v1");
-  const cached = await cache.match(`/offline/${song.id}`);
+  const cached = await cache.match(`/offline/${song.id}__${song.name}`);
   return !!cached;
 }
 
