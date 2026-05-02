@@ -45,8 +45,9 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
+    // /offline/xxx かつ -cover ではない
     if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const fileName = url.pathname.replace("/offline/", "");
+      const fileName = decodeURIComponent(url.pathname.replace("/offline/", ""));
 
       songs.push({
         name: fileName,
@@ -57,6 +58,7 @@ async function getOfflineSongs() {
   }
   return songs;
 }
+
 
 //  自動でオフライン曲を順番に流す
 let offlineIndex = 0;
@@ -239,16 +241,6 @@ async function saveSongOffline(song) {
   await cache.put(`/offline/${songId}-cover`, new Response(coverBlob));
 
   alert(`${fileName} とジャケット画像をオフライン保存しました`);
-}
-
-async function getOfflineSongs() {
-  const cache = await caches.open("music-app-v1");
-  const keys = await cache.keys();
-
-  // /offline/ の後ろにある ID を取り出す（-cover は除外）
-  return keys
-    .filter(req => req.url.includes("/offline/") && !req.url.includes("-cover"))
-    .map(req => decodeURIComponent(req.url.split("/offline/")[1]));
 }
 
 async function isSongOffline(song) {
