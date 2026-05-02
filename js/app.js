@@ -129,14 +129,12 @@ function renderOfflineList(songs, targetId) {
     // 再生（クリックで再生）
     div.addEventListener("click", (e) => {
       if (e.target.closest(".delete-btn")) return;
-      playOfflineSongDirect(song);
+      playOfflineSong(song);
     });
 
     list.appendChild(div);
   });
 }
-
-
 
 window.addEventListener("load", async () => {
   const offlineSongs = await getOfflineSongs();
@@ -268,8 +266,11 @@ async function isSongOffline(song) {
 async function deleteSongOffline(song) {
   const cache = await caches.open("music-app-v1");
 
-  const deletedSong = await cache.delete(`/offline/${song.id}`);
-  const deletedCover = await cache.delete(`/offline/${song.id}-cover`);
+  // キャッシュキーを統一
+  const key = `${song.id}__${song.name}`;
+
+  const deletedSong = await cache.delete(`/offline/${encodeURIComponent(key)}`);
+  const deletedCover = await cache.delete(`/offline/${encodeURIComponent(key)}-cover`);
 
   if (deletedSong || deletedCover) {
     alert(`${song.name} のオフラインデータを削除しました`);
@@ -277,6 +278,7 @@ async function deleteSongOffline(song) {
     alert(`${song.name} はオフライン保存されていません`);
   }
 }
+
 
 // ==========================
 // 再生処理（ここを一本化）
