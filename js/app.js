@@ -45,15 +45,16 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/music-app/offline/") && !url.pathname.endsWith("-cover")) {
-      const raw = decodeURIComponent(url.pathname.replace("/music-app/offline/", ""));
-      const key = url.pathname.replace("/music-app/offline/", ""); // decode しない
-      const [id, ...nameParts] = key.split("__");
+    if (url.pathname.startsWith("/music-app/offline/") &&
+        !url.pathname.endsWith("-cover")) {
+
+      const raw = url.pathname.replace("/music-app/offline/", "");
+      const [id, ...nameParts] = raw.split("__");
       const name = nameParts.join("__");
 
       songs.push({
         id,
-        name,
+        name,          // decode しない
         url: request.url,
         offline: true
       });
@@ -235,24 +236,27 @@ async function getFilesRecursively(itemId) {
 
 // ★ song.id をキーにして、同名ファイルでも上書きされないようにする
 async function saveSongOffline(song) {
-const cache = await caches.open("music-app-v1");
+  const cache = await caches.open("music-app-v1");
 
   // OneDrive の name はすでにエンコード済みなので、そのまま使う
   const key = `${song.id}__${song.name}`;
 
-  // 保存パスは encode しない（そのまま）
+  // 保存パス（encode しない）
   const url = `/music-app/offline/${key}`;
 
   // 音源を保存
   const response = await fetch(song.url);
   await cache.put(url, response);
 
-  // cover も保存（存在する場合）
-  const coverResponse = await fetch(song.coverUrl);
-  await cache.put(url + "-cover", coverResponse);
+  // cover を保存（存在する場合）
+  if (song.coverUrl) {
+    const coverResponse = await fetch(song.coverUrl);
+    await cache.put(url + "-cover", coverResponse);
+  }
 
-  alert(`${song.Name} とジャケット画像をオフライン保存しました`);
+  alert("オフライン保存しました");
 }
+
 
 async function isSongOffline(song) {
   const cache = await caches.open("music-app-v1");
@@ -266,13 +270,13 @@ async function deleteSongOffline(song) {
   // キャッシュキーを統一
   const key = `${song.id}__${song.name}`;
 
-  const deletedSong = await cache.delete(`/music-app/offline/${encodeURIComponent(key)}`);
-  const deletedCover = await cache.delete(`/music-app/offline/${encodeURIComponent(key)}-cover`);
+  const deletedSong = await cache.delete(`/music-app/offline/${key}`);
+  const deletedCover = await cache.delete(`/music-app/offline/${key}-cover`);
 
   if (deletedSong || deletedCover) {
-    alert(`${song.name} のオフラインデータを削除しました`);
+    alert(`${encodeURIComponent(song.name)} のオフラインデータを削除しました`);
   } else {
-    alert(`${song.name} はオフライン保存されていません`);
+    alert(`${encodeURIComponent(song.name)} はオフライン保存されていません`);
   }
 }
 
@@ -281,7 +285,7 @@ async function deleteSongOffline(song) {
 // 再生処理（ここを一本化）
 // ==========================
 async function playSong(song) {
-  console.log("再生要求:", song.name);
+  console.log("再生要求:", encodeURIComponent(song.name));
 
   // UI 更新
   updateNowPlayingUI(song);
@@ -310,10 +314,10 @@ async function playSong(song) {
   if (offline) {
     const blob = await offline.blob();
     audio.src = URL.createObjectURL(blob);
-    console.log("オフライン再生:", song.name);
+    console.log("オフライン再生:", encodeURIComponent(song.name));
   } else {
     audio.src = song["@microsoft.graph.downloadUrl"];
-    console.log("オンライン再生:", song.name);
+    console.log("オンライン再生:", encodeURIComponent(song.name));
   }
 
   await audio.play();
