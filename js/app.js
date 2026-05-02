@@ -35,7 +35,7 @@ const repeatBtn = document.getElementById('mini-repeatBtn');
 // 起動時の処理
 // ==========================
 
-//オフライン曲の表示
+//オフライン曲を取得
 async function getOfflineSongs() {
   const cache = await caches.open("music-app-v1");
   const keys = await cache.keys();
@@ -45,20 +45,29 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    // /offline/xxx かつ -cover ではない
+    // /offline/ から始まり、かつ -cover で終わらないものだけ
     if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      const fileName = decodeURIComponent(url.pathname.replace("/offline/", ""));
+      // /offline/ を取り除いてファイル名部分だけにする
+      const rawFileName = decodeURIComponent(
+        url.pathname.replace("/offline/", "")
+      );
+
+      // ここで ID__ファイル名 を分解する
+      // 例: "12345__My Song.mp3"
+      const [id, ...nameParts] = rawFileName.split("__");
+      const displayName = nameParts.join("__") || rawFileName; // 念のため保険
 
       songs.push({
-        name: fileName,
+        id,                 // "12345"
+        name: displayName,  // "My Song.mp3"
         url: request.url,
         offline: true
       });
     }
   }
+
   return songs;
 }
-
 
 //  自動でオフライン曲を順番に流す
 let offlineIndex = 0;
@@ -70,6 +79,7 @@ function startOfflinePlaylist(songs) {
   playOfflineSong();
 }
 
+//オフライン曲再生
 function playOfflineSong() {
   const song = offlinePlaylist[offlineIndex];
   const audio = document.getElementById("audioPlayer");
@@ -84,6 +94,7 @@ function playOfflineSong() {
   };
 }
 
+//オフライン曲の表示
 function renderOfflineList(songs, targetId) {
   const list = document.getElementById(targetId);
   if (!list) return;
@@ -94,32 +105,37 @@ function renderOfflineList(songs, targetId) {
     const div = document.createElement("div");
     div.className = "song-item";
 
-    const offline = await isSongOffline(song);
-    const coverUrl = await getCoverImage(song);
+    // cover は /offline/ID__name-cover のはず
+    const coverUrl = `/offline/${encodeURIComponent(song.id + "__" + song.name)}-cover`;
 
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
 
       <div class="song-info">
         <div class="song-title">${song.name}</div>
-        <div class="song-artist">${getArtistName(song)}</div>
+        <div class="song-artist">オフライン保存</div>
       </div>
 
-      <button class="save-btn">${offline ? "✓ 保存済み" : "↓ 保存"}</button>
-      ${offline ? `<button class="delete-btn">🗑</button>` : ""}
+      <button class="delete-btn">🗑</button>
     `;
 
-    // 削除
-    if (offline) {
-      div.querySelector(".delete-btn").addEventListener("click", async () => {
-        await deleteSongOffline(song);
-        renderAllLists(songs);
-      });
-    }
+    // 削除ボタン
+    div.querySelector(".delete-btn").addEventListener("click", async () => {
+      await deleteSongOffline(song);
+      const updated = await getOfflineSongs();
+      renderOfflineList(updated, targetId);
+    });
+
+    // 再生（クリックで再生）
+    div.addEventListener("click", (e) => {
+      if (e.target.closest(".delete-btn")) return;
+      playOfflineSongDirect(song);
+    });
 
     list.appendChild(div);
   });
 }
+
 
 
 window.addEventListener("load", async () => {
@@ -468,7 +484,7 @@ async function renderAllLists(oneDriveSongs) {
     !offlineIds.includes(song.id)
   );
 
-  renderSongList(offlineSongs, "offlineList", oneDriveSongs);
+  renderOfflineList(offlineSongs, "offlineList");
   renderSongList(cloudSongs, "cloudList", oneDriveSongs);
 }
 
