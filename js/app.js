@@ -45,22 +45,16 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
-    // /offline/ から始まり、かつ -cover で終わらないものだけ
-    if (url.pathname.startsWith("/offline/") && !url.pathname.endsWith("-cover")) {
-      // /offline/ を取り除いてファイル名部分だけにする
-      const rawFileName = decodeURIComponent(
-        url.pathname.replace("/offline/", "")
-      );
+    if (url.pathname.startsWith("/music-app/offline/") && !url.pathname.endsWith("-cover")) {
+      const raw = decodeURIComponent(url.pathname.replace("/music-app/offline/", ""));
 
-      // ここで ID__ファイル名 を分解する
-      // 例: "12345__My Song.mp3"
-      const [id, ...nameParts] = rawFileName.split("__");
-      const displayName = nameParts.join("__") || rawFileName; // 念のため保険
+      const [id, ...nameParts] = raw.split("__");
+      const name = nameParts.join("__");
 
       songs.push({
-        id,                 // "12345"
-        name: displayName,  // "My Song.mp3"
-        url: request.url,
+        id,
+        name,
+        url: `/music-app/offline/${encodeURIComponent(id + "__" + name)}`,
         offline: true
       });
     }
@@ -68,6 +62,7 @@ async function getOfflineSongs() {
 
   return songs;
 }
+
 
 //  自動でオフライン曲を順番に流す
 let offlineIndex = 0;
