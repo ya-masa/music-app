@@ -181,7 +181,7 @@ function login() {
 }
 
 // ==========================
-// OneDrive から曲一覧取得（downloadUrl を保証）
+// OneDrive から曲一覧取得（downloadUrl + key を保証）
 // ==========================
 async function loadOneDriveMusic() {
   const res = await fetch("https://graph.microsoft.com/v1.0/me/drive/root:/music", {
@@ -191,20 +191,29 @@ async function loadOneDriveMusic() {
 
   console.log("Music フォルダ情報", musicFolder);
 
-  // ① まずフォルダ内のファイル一覧を再帰取得
+  // ① 再帰的にファイル一覧を取得
   const songs = await getFilesRecursively(musicFolder.id);
 
-  // ② 各曲に “本物の downloadUrl” を付ける
+  // ② 各曲に downloadUrl と key を付与
   for (let song of songs) {
+
+    // ---- downloadUrl を取得 ----
     const urlRes = await fetch(
       `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     const data = await urlRes.json();
     song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
+
+    // ---- ★ キー仕様を追加（ここが重要） ----
+    song.key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
+
+    // ---- オフライン保存用 URL（保存時と一致） ----
+    song.offlineUrl = `/music-app/offline/${song.key}`;
+    song.coverOfflineUrl = `/music-app/offline/${song.key}-cover`;
   }
 
-  console.log("downloadUrl 付きの曲一覧", songs);
+  console.log("downloadUrl + key 付きの曲一覧", songs);
 
   // ③ 表示
   renderAllLists(songs);
@@ -216,6 +225,7 @@ async function loadOneDriveMusic() {
     console.log("再生できる音楽ファイルがありません");
   }
 }
+
 
 // ローディング表示
 function showLoading() {
