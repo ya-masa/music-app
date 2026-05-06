@@ -41,6 +41,11 @@
       <h2>📥 オフライン保存済み</h2>
       <div id="offlineList" class="song-list"></div>
 
+      <button id="backBtn" class="btn">戻る</button>
+      <div id="path"></div>
+
+      <ul id="itemList"></ul>
+
       <h2>☁ OneDrive の曲</h2><button onclick="login()">OneDrive にログイン</button>
       <div id="cloudList" class="song-list"></div>
 
@@ -90,4 +95,9 @@
     </script>
   </body>
 </html>
-
+<style>
+    .item { margin: 6px 0; }
+    .btn { padding: 6px 10px; margin: 4px 0; }
+    .folder { font-weight: bold; }
+    .file { color: #1a73e8; }
+</style>

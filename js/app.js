@@ -654,3 +654,120 @@ document.getElementById("clearCacheBtn").addEventListener("click", async () => {
 
   alert("キャッシュを全て削除しました。ページを再読み込みしてください。");
 });
+
+
+// -----------------------------
+// Graph クライアント（あなたの実装に合わせて）
+// -----------------------------
+const graphClient = window.graphClient; // 例：グローバルに置いている場合
+
+// 曲追加（あなたのアプリに合わせて書き換えてOK）
+function addSongsToPlayer(songs) {
+  console.log("追加:", songs);
+  // 実際はプレイヤーに渡す
+}
+
+// -----------------------------
+// 状態
+// -----------------------------
+let currentFolderId = "root";
+let historyStack = [];
+
+// DOM
+const itemList = document.getElementById("itemList");
+const backBtn = document.getElementById("backBtn");
+const pathLabel = document.getElementById("path");
+
+// -----------------------------
+// フォルダ読み込み
+// -----------------------------
+async function loadFolder(id) {
+  let endpoint = id === "root"
+    ? "/me/drive/root/children"
+    : `/me/drive/items/${id}/children`;
+
+  const res = await graphClient.api(endpoint).get();
+  const items = res.value || [];
+
+  renderList(items);
+  updatePath(id);
+}
+
+// -----------------------------
+// リスト描画
+// -----------------------------
+function renderList(items) {
+  itemList.innerHTML = "";
+
+  items.forEach(item => {
+    const li = document.createElement("li");
+    li.className = "item";
+
+    // フォルダ
+    if (item.folder) {
+      li.innerHTML = `<button class="btn folder">📁 ${item.name}</button>`;
+      li.querySelector("button").onclick = () => openFolder(item);
+    }
+    // 曲ファイル
+    else if (isAudio(item)) {
+      li.innerHTML = `<button class="btn file">🎵 ${item.name}</button>`;
+      li.querySelector("button").onclick = () => addSong(item);
+    }
+    // その他
+    else {
+      li.textContent = `📄 ${item.name}`;
+    }
+
+    itemList.appendChild(li);
+  });
+}
+
+// -----------------------------
+// フォルダを開く
+// -----------------------------
+function openFolder(item) {
+  historyStack.push(currentFolderId);
+  currentFolderId = item.id;
+  loadFolder(currentFolderId);
+}
+
+// -----------------------------
+// 戻る
+// -----------------------------
+backBtn.onclick = () => {
+  if (historyStack.length === 0) return;
+  currentFolderId = historyStack.pop();
+  loadFolder(currentFolderId);
+};
+
+// -----------------------------
+// 曲追加
+// -----------------------------
+function addSong(item) {
+  const song = {
+    id: item.id,
+    name: item.name,
+    url: item["@microsoft.graph.downloadUrl"],
+    size: item.size
+  };
+
+  addSongsToPlayer([song]);
+}
+
+// -----------------------------
+// ユーティリティ
+// -----------------------------
+function isAudio(item) {
+  return item.file && /\.(m4a|mp3|wav)$/i.test(item.name);
+}
+
+function updatePath(id) {
+  pathLabel.textContent = id === "root"
+    ? "OneDrive /"
+    : `フォルダ ID: ${id}`;
+}
+
+// -----------------------------
+// 初期読み込み
+// -----------------------------
+loadFolder(currentFolderId);
