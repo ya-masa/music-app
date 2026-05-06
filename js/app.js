@@ -139,8 +139,14 @@ function renderOfflineList(songs, targetId) {
     // 削除ボタン
     div.querySelector(".delete-btn").addEventListener("click", async () => {
       await deleteSongOffline(song);
-      const updated = await getOfflineSongs();
-      renderOfflineList(updated, targetId);
+      const updated = await getOfflineSongs(); 
+      if (updated.length > 0) {
+        // まずオフライン曲だけ表示
+        renderOfflineList(updated, "offlineList");
+        startOfflinePlaylist(updated);//曲再生
+      } else {
+        console.log("オフライン曲が見つからない");
+      }
     });
 
     // 再生（クリックで再生）
@@ -293,6 +299,18 @@ async function saveSongOffline(song) {
     }
 
     alert("オフライン保存しました");
+      const offlineSongs = await getOfflineSongs();
+
+  console.log("Offline songs:", offlineSongs); // ←デバッグ用
+
+  if (offlineSongs.length > 0) {
+    // まずオフライン曲だけ表示
+    renderOfflineList(offlineSongs, "offlineList");
+    startOfflinePlaylist(offlineSongs);//曲再生
+  } else {
+    console.log("オフライン曲が見つからない");
+  }
+
   }
 
 
@@ -316,9 +334,14 @@ async function saveSongOffline(song) {
     } else {
       alert(`${encodeURIComponent(song.name)} はオフライン保存されていません`);
     }
+    if (offlineSongs.length > 0) {
+      // まずオフライン曲だけ表示
+      renderOfflineList(offlineSongs, "offlineList");
+      startOfflinePlaylist(offlineSongs);//曲再生
+    } else {
+      console.log("オフライン曲が見つからない");
+    }
   }
-
-
 
 
 // ==========================
