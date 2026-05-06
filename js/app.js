@@ -297,13 +297,13 @@ async function saveSongOffline(song) {
 
 
   async function isSongOffline(song) {
-    const cache = await caches.open("music-app-v1");
+    const cache = await caches.open("music-app-v2");
     const cached = await cache.match(`/music-app/offline/${song.id}__${song.name}`);
     return !!cached;
   }
 
   async function deleteSongOffline(song) {
-    const cache = await caches.open("music-app-v1");
+    const cache = await caches.open("music-app-v2");
 
     // キャッシュキーを統一
     const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
