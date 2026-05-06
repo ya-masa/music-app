@@ -286,9 +286,9 @@ async function saveSongOffline(song) {
     const deletedCover = await cache.delete(`/music-app/offline/${key}-cover`);
 
     if (deletedSong || deletedCover) {
-      alert(`${song.name} のオフラインデータを削除しました`);
+      alert(`${encodeURIComponent(song.name)} のオフラインデータを削除しました`);
     } else {
-      alert(`${song.name} はオフライン保存されていません`);
+      alert(`${encodeURIComponent(song.name)} はオフライン保存されていません`);
     }
   }
 
@@ -320,7 +320,7 @@ async function playSong(song) {
   const cache = await caches.open("music-app-v1");
 
   // ★ 統一キー
-  const key = `${song.id}__${song.name}`;
+  const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
   const base = `/music-app/offline/${key}`;
 
   // ==========================
