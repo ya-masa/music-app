@@ -103,7 +103,7 @@ function renderOfflineList(songs, targetId) {
     div.className = "song-item";
 
     // ★ キーを再構築
-    const key = `${song.id}__${song.name}`;
+    const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
     const url = `/music-app/offline/${key}`;
     const coverUrl = url + "-cover";
 
