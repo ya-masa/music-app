@@ -89,21 +89,26 @@ function playOfflineSong() {
   };
 }
 
-//オフライン曲の表示
+// ==========================
+// オフライン曲の表示（キー仕様対応）
+// ==========================
 function renderOfflineList(songs, targetId) {
   const list = document.getElementById(targetId);
   if (!list) return;
 
   list.innerHTML = "";
 
-  songs.forEach(async song => {
+  songs.forEach(song => {
     const div = document.createElement("div");
     div.className = "song-item";
 
-    // cover は /offline/ID__name-cover のはず
+    // ★ キーを再構築
+    const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
+    const url = `/music-app/offline/${key}`;
+    const coverUrl = url + "-cover";
 
-    const coverUrl = song.url + "-cover";
     const songName = decodeURIComponent(song.name);
+
     div.innerHTML = `
       <img src="${coverUrl}" class="song-cover">
 
