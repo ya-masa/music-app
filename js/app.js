@@ -604,3 +604,23 @@ async function getCoverImage(song) {
   }
 }
 
+// ==========================
+// キャッシュ全削除ボタン
+// ==========================
+document.getElementById("clearCacheBtn").addEventListener("click", async () => {
+  // 1. Cache Storage を全削除
+  const cacheNames = await caches.keys();
+  for (const name of cacheNames) {
+    await caches.delete(name);
+  }
+
+  // 2. Service Worker のキャッシュも削除
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const reg of regs) {
+      await reg.unregister();
+    }
+  }
+
+  alert("キャッシュを全て削除しました。ページを再読み込みしてください。");
+});
