@@ -64,7 +64,6 @@ async function getOfflineSongs() {
   return songs;
 }
 
-
 //  自動でオフライン曲を順番に流す
 let offlineIndex = 0;
 let offlinePlaylist = [];
@@ -250,7 +249,7 @@ async function getFilesRecursively(itemId) {
 async function saveSongOffline(song) {
     const cache = await caches.open("music-app-v1");
 
-    const key = `${song.id}__${song.name}`;
+    const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
     const url = `/music-app/offline/${key}`;
 
     // ★ downloadUrl が無ければ song.url を使う
@@ -276,15 +275,15 @@ async function saveSongOffline(song) {
     const cache = await caches.open("music-app-v1");
 
     // キャッシュキーを統一
-    const key = `${song.id}__${song.name}`;
+    const key = `${encodeURIComponent(song.id)}__${encodeURIComponent(song.name)}`;
 
     const deletedSong = await cache.delete(`/music-app/offline/${key}`);
     const deletedCover = await cache.delete(`/music-app/offline/${key}-cover`);
 
     if (deletedSong || deletedCover) {
-      alert(`${encodeURIComponent(song.name)} のオフラインデータを削除しました`);
+      alert(`${song.name} のオフラインデータを削除しました`);
     } else {
-      alert(`${encodeURIComponent(song.name)} はオフライン保存されていません`);
+      alert(`${song.name} はオフライン保存されていません`);
     }
   }
 
@@ -301,7 +300,7 @@ async function saveSongOffline(song) {
 
 
 // ==========================
-// 再生処理（ここを一本化）
+// 再生処理（キー仕様に統一）
 // ==========================
 async function playSong(song) {
   console.log("再生要求:", encodeURIComponent(song.name));
@@ -315,8 +314,14 @@ async function playSong(song) {
 
   const cache = await caches.open("music-app-v1");
 
+  // ★ 統一キー
+  const key = `${song.id}__${song.name}`;
+  const base = `/music-app/offline/${key}`;
+
+  // ==========================
   // ジャケット画像（オフライン優先）
-  const coverOffline = await cache.match(`/music-app/offline/${song.id}-cover`);
+  // ==========================
+  const coverOffline = await cache.match(base + "-cover");
   if (coverOffline) {
     const blob = await coverOffline.blob();
     const url = URL.createObjectURL(blob);
@@ -328,8 +333,10 @@ async function playSong(song) {
     document.querySelector(".mini-cover").src = coverUrl;
   }
 
+  // ==========================
   // 曲本体（オフライン優先）
-  const offline = await cache.match(`/music-app/offline/${song.id}`);
+  // ==========================
+  const offline = await cache.match(base);
   if (offline) {
     const blob = await offline.blob();
     audio.src = URL.createObjectURL(blob);
