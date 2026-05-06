@@ -19,17 +19,20 @@ let isPlaying = false;
 let isRepeat = false;
 
 // メインプレイヤー要素（ID は HTML に合わせてね）
-const playBtn = document.getElementById('playBtn');
-const seekBar = document.getElementById('seekBar');
-const time = document.getElementById('duration');
-const currentTimeEl = document.getElementById('currentTime');
+const playBtn = document.getElementById('plyBtn');
+const seekBar = document.getElementById('np-seekBar');
+const time = document.getElementById('np-duration');
+const currentTimeEl = document.getElementById('np-currentTime');
+const repeatBtn = document.getElementById('repeatBtn');
+const nextBtn = document.getElementById('nextBtn');
 
 // ミニプレイヤー
-const playBtnMini = document.getElementById('mini-playBtn');
+const playBtnMini = document.getElementById('playBtnMini');
 const seekBarMini = document.getElementById('mini-seekBar');
 const timeMini = document.getElementById('mini-duration');
 const currentTimeMini = document.getElementById('mini-currentTime');
-const repeatBtn = document.getElementById('mini-repeatBtn');
+const repeatBtnMini = document.getElementById('repeatBtnMini');
+const nextBtnMIni = document.getElementById('nextBtnMini');
 
 // ==========================
 // 起動時の処理
@@ -315,15 +318,6 @@ async function saveSongOffline(song) {
     }
   }
 
-  async function enrichSongWithDownloadUrl(song) {
-    const res = await fetch(
-      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const data = await res.json();
-    song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
-    return song;
-  }
 
 
 
