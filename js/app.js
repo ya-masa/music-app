@@ -35,7 +35,9 @@ const repeatBtn = document.getElementById('mini-repeatBtn');
 // 起動時の処理
 // ==========================
 
-//オフライン曲を取得
+// ==========================
+// オフライン曲を取得（キー仕様対応）
+// ==========================
 async function getOfflineSongs() {
   const cache = await caches.open("music-app-v1");
   const keys = await cache.keys();
@@ -45,17 +47,21 @@ async function getOfflineSongs() {
   for (const request of keys) {
     const url = new URL(request.url);
 
+    // 曲本体のみ（cover は除外）
     if (url.pathname.startsWith("/music-app/offline/") &&
         !url.pathname.endsWith("-cover")) {
 
-      const raw = url.pathname.replace("/music-app/offline/", "");
-      const [id, ...nameParts] = raw.split("__");
+      // ★ エンコード済みキーをそのまま取得
+      const key = url.pathname.replace("/music-app/offline/", "");
+
+      // ★ id と name を復元（decode しない）
+      const [id, ...nameParts] = key.split("__");
       const name = nameParts.join("__");
 
       songs.push({
         id,
-        name,          // decode しない
-        url: request.url,
+        name,          // decode しない（エンコードされたまま）
+        key,           // ★ これが最重要
         offline: true
       });
     }
@@ -63,6 +69,7 @@ async function getOfflineSongs() {
 
   return songs;
 }
+
 
 //  自動でオフライン曲を順番に流す
 let offlineIndex = 0;
@@ -74,13 +81,19 @@ function startOfflinePlaylist(songs) {
   playOfflineSong();
 }
 
-//オフライン曲再生
+// ==========================
+// オフライン曲再生（キー仕様対応）
+// ==========================
 function playOfflineSong() {
   const song = offlinePlaylist[offlineIndex];
   const audio = document.getElementById("audioPlayer");
 
-  console.log("Playing:", song.url); // ←デバッグ用
-  audio.src = song.url;
+  // ★ song.key を使って URL を組み立てる
+  const url = `/music-app/offline/${song.key}`;
+
+  console.log("Playing:", url);
+
+  audio.src = url;
   audio.play();
 
   audio.onended = () => {
