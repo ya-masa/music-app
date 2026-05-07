@@ -334,6 +334,11 @@ async function saveSongOffline(song) {
     } else {
       alert(`${encodeURIComponent(song.name)} はオフライン保存されていません`);
     }
+    
+    const offlineSongs = await getOfflineSongs();
+
+    console.log("Offline songs:", offlineSongs); // ←デバッグ用
+
     if (offlineSongs.length > 0) {
       // まずオフライン曲だけ表示
       renderOfflineList(offlineSongs, "offlineList");

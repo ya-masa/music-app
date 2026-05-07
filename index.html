@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>OneDrive Music List</title>
+</head>
+<body>
+  <h1>OneDrive Music List</h1>
+
+  <button id="loginBtn">Microsoft にサインイン</button>
+  <button id="chooseFolderBtn" disabled>フォルダを選ぶ</button>
+  <div id="folderList"></div>
+
+  <h2>曲リスト</h2>
+  <ul id="trackList"></ul>
+  <h2 id="nowPlaying">▶ 再生中: なし</h2>
+
+  <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+  <script src="music-app.js"></script>
+</body>
+</html>
+
