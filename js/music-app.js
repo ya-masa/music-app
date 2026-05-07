@@ -102,25 +102,78 @@ async function listRootFolders() {
 // ==========================
 // ⑦ フォルダ一覧を表示
 // ==========================
-async function showFolderList() {
-  const folders = await listRootFolders();
+async function showFolderChildren(folderId) {
+  const res = await fetch(
+    `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  const data = await res.json();
+  const items = data.value;
+
   const container = document.getElementById("folderList");
-  container.innerHTML = "";
+  container.innerHTML = ""; // 前の階層を消す
 
-  folders.forEach(folder => {
-    const btn = document.createElement("button");
-    btn.textContent = folder.name;
-    btn.style.display = "block";
-    btn.style.margin = "8px 0";
+  // --- 決定ボタン ---
+  const decideBtn = document.createElement("button");
+  decideBtn.textContent = "このフォルダを使う";
+  decideBtn.style.margin = "10px 0";
+  decideBtn.onclick = () => {
+    localStorage.setItem("musicFolderId", folderId);
+    loadMusicFromFolder(folderId);  // ← 再帰スキャン開始
+    container.innerHTML = "";       // UI を消す
+  };
+  container.appendChild(decideBtn);
 
-    btn.onclick = () => {
-      localStorage.setItem("musicFolderId", folder.id);
-      currentFolder.textContent = `選択中フォルダ: ${folder.name}`;
-      loadMusicFromFolder(folder.id);
-    };
+  // --- フォルダ一覧 ---
+  items.forEach(item => {
+    if (item.folder) {
+      const btn = document.createElement("button");
+      btn.textContent = "📁 " + item.name;
+      btn.style.display = "block";
+      btn.style.margin = "6px 0";
 
-    container.appendChild(btn);
+      btn.onclick = () => {
+        showFolderChildren(item.id);  // ← 下の階層へ移動
+      };
+
+      container.appendChild(btn);
+    }
   });
+}
+// ==========================
+// ⑧ 決定ボタンを押下する
+// ==========================
+chooseFolderBtn.onclick = () => {
+  showFolderChildren("root");
+};
+// ==========================
+// ⑧ 決定ボタン押下時の動作
+// ==========================
+async function loadMusicFromFolder(folderId) {
+  console.log("選択フォルダID:", folderId);
+
+  // ① 再帰的に曲一覧を取得
+  const songs = await getFilesRecursively(folderId);
+
+  // ② downloadUrl を付与
+  for (let song of songs) {
+    const urlRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    const data = await urlRes.json();
+    song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
+  }
+
+  // ③ 曲一覧を表示
+  renderSongList(songs);
+
+  // ④ 最初の曲を再生
+  if (songs.length > 0) {
+    playSong(songs[0]);
+  }
 }
 
 
@@ -149,28 +202,41 @@ async function getFilesRecursively(folderId) {
 }
 
 
+
 // ==========================
 // ⑨ 曲を読み込み → 表示 → 再生
 // ==========================
 async function loadMusicFromFolder(folderId) {
+  console.log("選択フォルダID:", folderId);
+
+  // ① 再帰的に曲一覧を取得
   const songs = await getFilesRecursively(folderId);
 
+  // ② downloadUrl を付与
   for (let song of songs) {
     const urlRes = await fetch(
       `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
-
     const data = await urlRes.json();
     song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
   }
 
-  renderSongList(songs);
-
-  if (songs.length > 0) {
-    playSong(songs[0]);
+  // ③ フォルダごとに保存（重複曲は追加しない）
+  if (!folderSongsMap[folderId]) {
+    folderSongsMap[folderId] = [];
   }
+
+  songs.forEach(song => {
+    if (!folderSongsMap[folderId].some(s => s.id === song.id)) {
+      folderSongsMap[folderId].push(song);
+    }
+  });
+
+  // ④ フォルダごとに表示
+  renderFolderLists();
 }
+
 
 
 // ==========================
@@ -192,6 +258,43 @@ function renderSongList(songs) {
   });
 }
 
+function renderFolderLists() {
+  const container = document.getElementById("trackList");
+  container.innerHTML = "";
+
+  for (const folderId in folderSongsMap) {
+    const songs = folderSongsMap[folderId];
+
+    // --- フォルダタイトル ---
+    const title = document.createElement("h3");
+    title.textContent = `📁 フォルダ: ${folderId}`;
+    title.style.marginTop = "20px";
+    title.style.color = "#333";
+    container.appendChild(title);
+
+    // --- 曲リスト ---
+    songs.forEach(song => {
+      const li = document.createElement("div");
+      li.textContent = song.name;
+      li.style.cursor = "pointer";
+      li.style.padding = "4px 0";
+
+      // 再生中の曲をハイライト
+      if (song.id === currentPlayingId) {
+        li.style.background = "#d0f0ff";
+      }
+
+      li.onclick = () => {
+        playSong(song);
+        currentPlayingId = song.id;
+        renderFolderLists(); // ハイライト更新
+      };
+
+      container.appendChild(li);
+    });
+  }
+}
+
 
 // ==========================
 // ⑪ 再生
@@ -208,3 +311,5 @@ function playSong(song) {
     `▶ 再生中: ${song.name}`;
 }
 
+let folderSongsMap = {};  
+// 例： folderSongsMap[folderId] = [song1, song2, ...]
