@@ -23,6 +23,9 @@ const chooseFolderBtn = document.getElementById("chooseFolderBtn");
 const trackList = document.getElementById("trackList");
 const currentFolder = document.getElementById("currentFolder");
 
+let folderSongsMap = {};     // フォルダID → 曲配列
+let folderNameMap  = {};     // フォルダID → フォルダ名
+
 
 // ==========================
 // ② ページ読み込み時
@@ -144,9 +147,15 @@ async function showFolderChildren(folderId) {
 // ==========================
 // ⑧ 決定ボタンを押下する
 // ==========================
-chooseFolderBtn.onclick = () => {
-  showFolderChildren("root");
+decideBtn.onclick = () => {
+  // フォルダ名も一緒に保存しておく
+  folderNameMap[folderId] = currentFolderName; // ← ここは後で説明する
+
+  localStorage.setItem("musicFolderId", folderId);
+  loadMusicFromFolder(folderId);
+  container.innerHTML = "";
 };
+
 // ==========================
 // ⑧ 決定ボタン押下時の動作
 // ==========================
@@ -265,9 +274,12 @@ function renderFolderLists() {
   for (const folderId in folderSongsMap) {
     const songs = folderSongsMap[folderId];
 
+    // ★ フォルダ名を取得（なければID）
+    const folderName = folderNameMap[folderId] || folderId;
+
     // --- フォルダタイトル ---
     const title = document.createElement("h3");
-    title.textContent = `📁 フォルダ: ${folderId}`;
+    title.textContent = `📁 ${folderName}`;
     title.style.marginTop = "20px";
     title.style.color = "#333";
     container.appendChild(title);
@@ -279,7 +291,6 @@ function renderFolderLists() {
       li.style.cursor = "pointer";
       li.style.padding = "4px 0";
 
-      // 再生中の曲をハイライト
       if (song.id === currentPlayingId) {
         li.style.background = "#d0f0ff";
       }
@@ -287,13 +298,14 @@ function renderFolderLists() {
       li.onclick = () => {
         playSong(song);
         currentPlayingId = song.id;
-        renderFolderLists(); // ハイライト更新
+        renderFolderLists();
       };
 
       container.appendChild(li);
     });
   }
 }
+
 
 
 // ==========================
