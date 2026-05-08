@@ -58,9 +58,31 @@ window.addEventListener("load", async () => {
 // ③ ログイン
 // ==========================
 loginBtn.onclick = () => {
-  msalInstance.loginRedirect(loginRequest);
+  login();
 };
 
+// ==========================
+// ログイン処理
+// ==========================
+function login() {
+  alert("Microsoft のログイン画面に移動します");
+  msalInstance.loginPopup({
+    scopes: ["Files.Read"]
+  }).then(result => {
+    console.log("ログイン成功", result);
+    return msalInstance.acquireTokenSilent({
+      scopes: ["Files.Read"],
+      account: result.account
+    });
+  }).then(tokenResponse => {
+    accessToken = tokenResponse.accessToken;
+    console.log("アクセストークン取得", accessToken);
+    loginBtn.disabled = true;
+    chooseFolderBtn.disabled = false;
+  }).catch(err => {
+    console.error(err);
+  });
+}
 
 // ==========================
 // ④ ログイン後
@@ -119,7 +141,7 @@ async function showFolderChildren(folderId) {
 
   // --- 決定ボタン ---
   const decideBtn = document.createElement("button");
-  decideBtn.textContent = "このフォルダを使う";
+  decideBtn.textContent = "曲を探すフォルダ決定";
   decideBtn.style.margin = "10px 0";
   decideBtn.onclick = () => {
     localStorage.setItem("musicFolderId", folderId);
