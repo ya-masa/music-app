@@ -74,7 +74,7 @@ chooseFolderBtn.onclick = async () => {
   container.innerHTML = "";
 
   folders.forEach(item => {
-    renderFolderCard(container, item.id, item.name);
+    showFolderChildren(item.id, item.name);
   });
 };
 
