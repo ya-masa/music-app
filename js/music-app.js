@@ -172,53 +172,6 @@ function renderSongCard(container, item) {
 
 
 /* ==========================
-   ⑨ 曲を読み込み → 保存 → 表示
-========================== */
-async function loadMusicFromFolder(folderId) {
-  // ① フォルダ内の曲を再帰的に取得
-  const songs = await getFilesRecursively(folderId);
-
-  // ② アルバム名（このフォルダ名）
-  const albumName = folderNameMap[folderId] || "Unknown Album";
-
-  // ③ アーティスト名（親フォルダ名を使う）
-  // showFolderChildren() で folderNameMap に保存している前提
-  let artistName = "Unknown Artist";
-
-  // 親フォルダ名を取得（folderNameMap に保存されている）
-  if (folderNameMap["parent"]) {
-    artistName = folderNameMap["parent"];
-  }
-
-  // ④ 選曲リストをクリア（1つだけ保持）
-  selectedSongs = [];
-
-  // ⑤ 曲を selectedSongs に追加（folderId を保持）
-  for (const song of songs) {
-    const urlRes = await fetch(
-      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const data = await urlRes.json();
-
-    selectedSongs.push({
-      id: song.id,
-      folderId: folderId,          // ★ フォルダID方式を保持
-      name: song.name,
-      url: data["@microsoft.graph.downloadUrl"],
-      artist: artistName,
-      album: albumName
-    });
-  }
-
-  // ⑥ 選曲リストを表示
-  renderSelectedList();
-}
-
-
-
-
-/* ==========================
    ⑩再生リスト表示
 ========================== */
 function renderSelectedList() {
