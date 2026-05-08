@@ -29,58 +29,46 @@ let folderNameMap  = {};     // フォルダID → フォルダ名
 // ==========================
 // ② ページ読み込み時
 // ==========================
-window.addEventListener("load", async () => {
- /* msalInstance.handleRedirectPromise().then(async (response) => {
-
-    if (response) {
-      await handleLogin(response.account);
-    } else {
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        await handleLogin(accounts[0]);
-      }
-    }
-
-    // 保存済みフォルダIDがあれば自動読み込み
-    if (accessToken) {
-      const savedFolderId = localStorage.getItem("musicFolderId");
-      if (savedFolderId) {
-        currentFolder.textContent = `保存済みフォルダID: ${savedFolderId}`;
-        await loadMusicFromFolder(savedFolderId);
-      }
-    }
-  });*/
+// ★ redirect 用の処理は iPhone で邪魔なので完全削除
+window.addEventListener("load", () => {
+  // 何もしない
 });
 
 
 // ==========================
-// ③ ログイン
+// ③ ログインボタン
 // ==========================
 loginBtn.onclick = () => {
   login();
 };
 
+
 // ==========================
-// ログイン処理
+// ④ ポップアップ方式ログイン
 // ==========================
 function login() {
   alert("Microsoft のログイン画面に移動します");
-  msalInstance.loginPopup({
-    scopes: ["Files.Read"]
-  }).then(result => {
-    console.log("ログイン成功", result);
-    return msalInstance.acquireTokenSilent({
-      scopes: ["Files.Read"],
-      account: result.account
+
+  msalInstance.loginPopup(loginRequest)
+    .then(result => {
+      console.log("ログイン成功", result);
+
+      return msalInstance.acquireTokenSilent({
+        scopes: ["Files.Read"],
+        account: result.account
+      });
+    })
+    .then(tokenResponse => {
+      accessToken = tokenResponse.accessToken;
+      console.log("アクセストークン取得", accessToken);
+
+      // UI 更新
+      loginBtn.disabled = true;
+      chooseFolderBtn.disabled = false;
+    })
+    .catch(err => {
+      console.error("ログインエラー", err);
     });
-  }).then(tokenResponse => {
-    accessToken = tokenResponse.accessToken;
-    console.log("アクセストークン取得", accessToken);
-    loginBtn.disabled = true;
-    chooseFolderBtn.disabled = false;
-  }).catch(err => {
-    console.error(err);
-  });
 }
 
 // ==========================
@@ -105,7 +93,7 @@ async function handleLogin(account) {
 // ⑤ フォルダ選択ボタン
 // ==========================
 chooseFolderBtn.onclick = () => {
-  showFolderList();
+  listRootFolders();
 };
 
 
