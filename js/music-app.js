@@ -92,9 +92,26 @@ async function handleLogin(account) {
 // ==========================
 // ⑤ フォルダ選択ボタン
 // ==========================
-chooseFolderBtn.onclick = () => {
-  showFolderChildren();
+chooseFolderBtn.onclick = async () => {
+  const folders = await listRootFolders();
+
+  const container = document.getElementById("folderList");
+  container.innerHTML = "";
+
+  folders.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = "📁 " + item.name;
+    btn.style.display = "block";
+    btn.style.margin = "6px 0";
+
+    btn.onclick = () => {
+      showFolderChildren(item.id, item.name);
+    };
+
+    container.appendChild(btn);
+  });
 };
+
 
 
 // ==========================
