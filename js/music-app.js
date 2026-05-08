@@ -18,11 +18,6 @@ let currentPlayingId = null;
 let currentFolderId = null;
 let currentFolderParentName = null;
 
-let selectedSongs = [];
-let currentIndex = 0;
-let isRepeating = false;
-
-const audio = document.getElementById("audio");
 
 // HTML 要素
 const loginBtn = document.getElementById("loginBtn");
@@ -35,7 +30,7 @@ let folderNameMap  = {};     // フォルダID → フォルダ名
 /* ==========================
    追加（選曲リスト & 再生管理）
 ========================== */
-let selectedSongs = [];   // 選曲リスト（1つだけ）
+let selectedSongs = [];
 let audio = new Audio();  // mini-player と同期
 let currentIndex = 0;     // 再生中の曲番号
 let isRepeating = false;  // 1曲リピート
