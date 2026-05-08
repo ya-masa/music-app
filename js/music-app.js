@@ -44,34 +44,38 @@ loginBtn.onclick = () => login();
 async function login() {
   alert("Microsoft のログイン画面に移動します");
 
-  msalInstance.loginPopup(loginRequest)
-    .then(result => {
-      return msalInstance.acquireTokenSilent({
-        scopes: ["Files.Read"],
-        account: result.account
-      });
-    })
-    .then(tokenResponse => {
-      accessToken = tokenResponse.accessToken;
+  try {
+    // ① ログイン
+    const result = await msalInstance.loginPopup(loginRequest);
 
-      loginBtn.disabled = true;
-      chooseFolderBtn.disabled = false;
+    // ② トークン取得
+    const tokenResponse = await msalInstance.acquireTokenSilent({
+      scopes: ["Files.Read"],
+      account: result.account
+    });
 
-      // ログイン後すぐフォルダ選択を開く
-      const folders = await listRootFolders();
+    accessToken = tokenResponse.accessToken;
 
-      const container = document.getElementById("folderList");
-      container.innerHTML = "";
+    loginBtn.disabled = true;
+    chooseFolderBtn.disabled = false;
 
-      // フォルダ一覧を表示
-      folders.forEach(folder => {
-        const div = document.createElement("div");
-        div.textContent = folder.name;
-        div.onclick = () => showFolderChildren(folder.id, folder.name);
-        container.appendChild(div);
-      });
-    })
-    .catch(err => console.error("ログインエラー", err));
+    // ③ フォルダ一覧取得（await OK）
+    const folders = await listRootFolders();
+
+    const container = document.getElementById("folderList");
+    container.innerHTML = "";
+
+    // ④ フォルダ一覧を表示
+    folders.forEach(folder => {
+      const div = document.createElement("div");
+      div.textContent = folder.name;
+      div.onclick = () => showFolderChildren(folder.id, folder.name);
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("ログインエラー", err);
+  }
 }
 
 
