@@ -58,26 +58,19 @@ function login() {
       chooseFolderBtn.disabled = false;
 
       // ログイン後すぐフォルダ選択を開く
-      listRootFolders();
+      const folders = await listRootFolders();
+
+      const container = document.getElementById("folderList");
+      container.innerHTML = "";
+
+      folders.forEach(item => {
+        showFolderChildren(item.id, item.name);
+        console.log("item=",item);
+      });
     })
     .catch(err => console.error("ログインエラー", err));
 }
 
-
-/* ==========================
-   ④ フォルダ選択（ルート）
-========================== */
-chooseFolderBtn.onclick = async () => {
-  const folders = await listRootFolders();
-
-  const container = document.getElementById("folderList");
-  container.innerHTML = "";
-
-  folders.forEach(item => {
-    showFolderChildren(item.id, item.name);
-    console.log("item=",item);
-  });
-};
 
 
 /* ==========================
@@ -93,58 +86,32 @@ async function listRootFolders() {
   return data.value.filter(item => item.folder);
 }
 
-
 /* ==========================
-   ⑥ 下の階層のフォルダ表示
+   OneDrive 子フォルダ表示
 ========================== */
-async function showFolderChildren(folderId, folderName) {
-  const res = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+async function showFolderChildren(folderId, parentName) {
+  currentFolderId = folderId;
+  currentFolderParentName = parentName || "Unknown Artist";
+
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
   const data = await res.json();
-  const items = data.value;
 
   const container = document.getElementById("folderList");
   container.innerHTML = "";
 
-  /* ==========================
-     ★ フォルダ名を先に表示
-  ========================== */
-  const folderTitle = document.createElement("div");
-  folderTitle.textContent = `📁 ${folderName}`;
-  folderTitle.style.fontSize = "20px";
-  folderTitle.style.fontWeight = "bold";
-  folderTitle.style.margin = "10px 0";
-  container.appendChild(folderTitle);
+  data.value.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "folder-item";
+    div.textContent = item.name;
 
-  /* ==========================
-     ★ 決定ボタン
-  ========================== */
-  const decideBtn = document.createElement("button");
-  decideBtn.textContent = "このフォルダを使う";
-  decideBtn.style.margin = "10px 0";
-
-  decideBtn.onclick = () => {
-    folderNameMap[folderId] = folderName;
-    loadMusicFromFolder(folderId);   // ← 選曲リストに追加する処理
-    container.innerHTML = "";
-  };
-
-  container.appendChild(decideBtn);
-
-  /* ==========================
-     ★ 子フォルダと曲を表示
-  ========================== */
-  items.forEach(item => {
     if (item.folder) {
-      // フォルダ → カード表示
-      renderFolderCard(container, item.id, item.name);
-
-    } else if (item.file && item.file.mimeType.startsWith("audio")) {
-      // 曲 → 曲カード表示
-      renderSongCard(container, item);
+      div.onclick = () => showFolderChildren(item.id, item.name);
+    } else if (item.name.match(/\.(mp3|wav|m4a)$/i)) {
+      div.onclick = () => addSingleSong(item);
     }
+
+    container.appendChild(div);
   });
 }
 
