@@ -114,7 +114,7 @@ async function listRootFolders() {
 // ==========================
 // ⑦ フォルダ一覧を表示
 // ==========================
-async function showFolderChildren(folderId) {
+async function showFolderChildren(folderId, folderName) {
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -128,13 +128,23 @@ async function showFolderChildren(folderId) {
 
   // --- 決定ボタン ---
   const decideBtn = document.createElement("button");
-  decideBtn.textContent = "曲を探すフォルダ決定";
+  decideBtn.textContent = "このフォルダを使う";
   decideBtn.style.margin = "10px 0";
+
   decideBtn.onclick = () => {
+    // ★ フォルダ名を保存（フォルダID → フォルダ名）
+    folderNameMap[folderId] = folderName;
+
+    // ★ 選択したフォルダを保存
     localStorage.setItem("musicFolderId", folderId);
-    loadMusicFromFolder(folderId);  // ← 再帰スキャン開始
-    container.innerHTML = "";       // UI を消す
+
+    // ★ 再帰スキャン開始
+    loadMusicFromFolder(folderId);
+
+    // UI を閉じる
+    container.innerHTML = "";
   };
+
   container.appendChild(decideBtn);
 
   // --- フォルダ一覧 ---
@@ -146,13 +156,15 @@ async function showFolderChildren(folderId) {
       btn.style.margin = "6px 0";
 
       btn.onclick = () => {
-        showFolderChildren(item.id);  // ← 下の階層へ移動
+        // ★ フォルダ名も渡す
+        showFolderChildren(item.id, item.name);
       };
 
       container.appendChild(btn);
     }
   });
 }
+
 // ==========================
 // ⑧ 決定ボタンを押下する
 // ==========================
