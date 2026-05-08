@@ -14,16 +14,15 @@ const msalInstance = new msal.PublicClientApplication(msalConfig);
 
 let accessToken = null;
 let currentAudio = null;
+let currentPlayingId = null;
 
 // HTML 要素
 const loginBtn = document.getElementById("loginBtn");
 const chooseFolderBtn = document.getElementById("chooseFolderBtn");
 const trackList = document.getElementById("trackList");
-const folderList = document.getElementById("folderList");
 
-// 保存用
-let folderSongsMap = {};   // フォルダID → 曲配列
-let folderNameMap  = {};   // フォルダID → フォルダ名
+let folderSongsMap = {};     // フォルダID → 曲配列
+let folderNameMap  = {};     // フォルダID → フォルダ名
 
 
 /* ==========================
@@ -31,9 +30,6 @@ let folderNameMap  = {};   // フォルダID → フォルダ名
 ========================== */
 window.addEventListener("load", async () => {
   const saved = JSON.parse(localStorage.getItem("savedFolders") || "[]");
-  const savedNames = JSON.parse(localStorage.getItem("folderNameMap") || "{}");
-
-  folderNameMap = savedNames;
 
   for (const folderId of saved) {
     await loadMusicFromFolder(folderId);
@@ -62,6 +58,7 @@ function login() {
       loginBtn.disabled = true;
       chooseFolderBtn.disabled = false;
 
+      // ログイン後すぐフォルダ選択を開く
       chooseFolderBtn.click();
     })
     .catch(err => console.error("ログインエラー", err));
@@ -69,17 +66,23 @@ function login() {
 
 
 /* ==========================
-   ④ ルートフォルダ一覧
+   ④ フォルダ選択（ルート）
 ========================== */
 chooseFolderBtn.onclick = async () => {
   const folders = await listRootFolders();
-  folderList.innerHTML = "";
+
+  const container = document.getElementById("folderList");
+  container.innerHTML = "";
 
   folders.forEach(item => {
-    renderFolderCard(folderList, item.id, item.name);
+    renderFolderCard(container, item.id, item.name);
   });
 };
 
+
+/* ==========================
+   ⑤ ルート直下のフォルダ一覧取得
+========================== */
 async function listRootFolders() {
   const res = await fetch(
     "https://graph.microsoft.com/v1.0/me/drive/root/children",
@@ -92,7 +95,7 @@ async function listRootFolders() {
 
 
 /* ==========================
-   ⑤ 下の階層のフォルダ表示
+   ⑥ 下の階層のフォルダ表示
 ========================== */
 async function showFolderChildren(folderId, folderName) {
   const res = await fetch(
@@ -102,30 +105,31 @@ async function showFolderChildren(folderId, folderName) {
   const data = await res.json();
   const items = data.value;
 
-  folderList.innerHTML = "";
+  const container = document.getElementById("folderList");
+  container.innerHTML = "";
 
   // ★ 決定ボタン
   const decideBtn = document.createElement("button");
-  decideBtn.textContent = folderName&"を使う";
+  decideBtn.textContent = "このフォルダを使う";
   decideBtn.style.margin = "10px 0";
   decideBtn.onclick = () => {
     folderNameMap[folderId] = folderName;
     loadMusicFromFolder(folderId);
-    folderList.innerHTML = "";
+    container.innerHTML = "";
   };
-  folderList.appendChild(decideBtn);
+  container.appendChild(decideBtn);
 
-  // ★ 子フォルダだけ表示（曲は表示しない）
+  // ★ 子フォルダだけカード表示（曲は表示しない）
   items.forEach(item => {
     if (item.folder) {
-      renderFolderCard(folderList, item.id, item.name);
+      renderFolderCard(container, item.id, item.name);
     }
   });
 }
 
 
 /* ==========================
-   ⑥ フォルダカード（CSS対応）
+   ⑦ フォルダカード（CSS対応）
 ========================== */
 function renderFolderCard(container, folderId, folderName) {
   const card = document.createElement("div");
@@ -157,7 +161,7 @@ function renderFolderCard(container, folderId, folderName) {
 
 
 /* ==========================
-   ⑦ 再帰的に曲を取得
+   ⑧ 再帰的に曲を取得
 ========================== */
 async function getFilesRecursively(folderId) {
   const res = await fetch(
@@ -182,7 +186,7 @@ async function getFilesRecursively(folderId) {
 
 
 /* ==========================
-   ⑧ 曲を読み込み → 保存 → 表示
+   ⑨ 曲を読み込み → 保存 → 表示
 ========================== */
 async function loadMusicFromFolder(folderId) {
   const songs = await getFilesRecursively(folderId);
@@ -191,7 +195,6 @@ async function loadMusicFromFolder(folderId) {
 
   // 保存
   localStorage.setItem("savedFolders", JSON.stringify(Object.keys(folderSongsMap)));
-  localStorage.setItem("folderNameMap", JSON.stringify(folderNameMap));
 
   // 表示
   renderDownloadedLists();
@@ -199,46 +202,21 @@ async function loadMusicFromFolder(folderId) {
 
 
 /* ==========================
-   ⑨ ダウンロード済みリスト表示（カード型）
+   ⑩ ダウンロード済みリスト表示（カード型）
 ========================== */
 function renderDownloadedLists() {
-  trackList.innerHTML = "";
+  const container = document.getElementById("trackList");
+  container.innerHTML = "";
 
   for (const folderId in folderSongsMap) {
     const songs = folderSongsMap[folderId];
     const folderName = folderNameMap[folderId] || folderId;
 
     // フォルダタイトル
-    const titleRow = document.createElement("div");
-    titleRow.style.display = "flex";
-    titleRow.style.alignItems = "center";
-    titleRow.style.gap = "10px";
-
     const title = document.createElement("h3");
     title.textContent = `📁 ${folderName}`;
-
-    // ★ フォルダ削除ボタン
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "削除";
-    delBtn.style.background = "#ffe0e0";
-    delBtn.style.border = "none";
-    delBtn.style.padding = "6px 10px";
-    delBtn.style.borderRadius = "8px";
-    delBtn.style.cursor = "pointer";
-
-    delBtn.onclick = () => {
-      delete folderSongsMap[folderId];
-      delete folderNameMap[folderId];
-
-      localStorage.setItem("savedFolders", JSON.stringify(Object.keys(folderSongsMap)));
-      localStorage.setItem("folderNameMap", JSON.stringify(folderNameMap));
-
-      renderDownloadedLists();
-    };
-
-    titleRow.appendChild(title);
-    titleRow.appendChild(delBtn);
-    trackList.appendChild(titleRow);
+    title.style.margin = "16px 0 8px";
+    container.appendChild(title);
 
     // 曲カード
     songs.forEach(song => {
@@ -247,7 +225,7 @@ function renderDownloadedLists() {
 
       const cover = document.createElement("img");
       cover.className = "song-cover";
-      cover.src = "images/music-note.png";
+      cover.src = "img/default-cover.png";
 
       const info = document.createElement("div");
       info.className = "song-info";
@@ -268,14 +246,14 @@ function renderDownloadedLists() {
 
       item.onclick = () => playSong(song);
 
-      trackList.appendChild(item);
+      container.appendChild(item);
     });
   }
 }
 
 
 /* ==========================
-   ⑩ 再生（URLをその場で取得）
+   ⑪ 再生（URLをその場で取得）
 ========================== */
 async function playSong(song) {
   if (currentAudio) currentAudio.pause();
