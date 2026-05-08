@@ -214,22 +214,8 @@ async function getFilesRecursively(folderId) {
 // ⑨ 曲を読み込み → 表示 → 再生
 // ==========================
 async function loadMusicFromFolder(folderId) {
-  console.log("選択フォルダID:", folderId);
-
-  // ① 再帰的に曲一覧を取得
   const songs = await getFilesRecursively(folderId);
 
-  // ② downloadUrl を付与
-  for (let song of songs) {
-    const urlRes = await fetch(
-      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const data = await urlRes.json();
-    song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
-  }
-
-  // ③ フォルダごとに保存（重複曲は追加しない）
   if (!folderSongsMap[folderId]) {
     folderSongsMap[folderId] = [];
   }
@@ -240,9 +226,9 @@ async function loadMusicFromFolder(folderId) {
     }
   });
 
-  // ④ フォルダごとに表示
   renderFolderLists();
 }
+
 
 
 
