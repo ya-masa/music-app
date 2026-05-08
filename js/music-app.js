@@ -132,56 +132,56 @@ async function listRootFolders() {
 // ==========================
 // ⑦ フォルダ一覧を表示
 // ==========================
-async function showFolderChildren(folderId, folderName) {
-  const res = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-
-  const data = await res.json();
-  const items = data.value;
-
+function showFolderChildren(folderId, folderName) {
   const container = document.getElementById("folderList");
-  container.innerHTML = ""; // 前の階層を消す
+  container.innerHTML = "";
 
-  // --- 決定ボタン ---
+  // 決定ボタン
   const decideBtn = document.createElement("button");
   decideBtn.textContent = "このフォルダを使う";
   decideBtn.style.margin = "10px 0";
-
   decideBtn.onclick = () => {
-    // ★ フォルダ名を保存（フォルダID → フォルダ名）
     folderNameMap[folderId] = folderName;
-
-    // ★ 選択したフォルダを保存
     localStorage.setItem("musicFolderId", folderId);
-
-    // ★ 再帰スキャン開始
     loadMusicFromFolder(folderId);
-
-    // UI を閉じる
     container.innerHTML = "";
   };
-
   container.appendChild(decideBtn);
 
-  // --- フォルダ一覧 ---
+  // フォルダ一覧
   items.forEach(item => {
     if (item.folder) {
-      const btn = document.createElement("button");
-      btn.textContent = "📁 " + item.name;
-      btn.style.display = "block";
-      btn.style.margin = "6px 0";
+      const card = document.createElement("div");
+      card.className = "song-item";
 
-      btn.onclick = () => {
-        // ★ フォルダ名も渡す
+      const icon = document.createElement("div");
+      icon.className = "song-cover";
+      icon.style.background = "#ccc";
+      icon.style.display = "flex";
+      icon.style.alignItems = "center";
+      icon.style.justifyContent = "center";
+      icon.textContent = "📁";
+
+      const info = document.createElement("div");
+      info.className = "song-info";
+
+      const name = document.createElement("div");
+      name.className = "song-title";
+      name.textContent = item.name;
+
+      info.appendChild(name);
+      card.appendChild(icon);
+      card.appendChild(info);
+
+      card.onclick = () => {
         showFolderChildren(item.id, item.name);
       };
 
-      container.appendChild(btn);
+      container.appendChild(card);
     }
   });
 }
+
 
 
 // ==========================
@@ -257,38 +257,56 @@ function renderFolderLists() {
 
   for (const folderId in folderSongsMap) {
     const songs = folderSongsMap[folderId];
-
-    // ★ フォルダ名を取得（なければID）
     const folderName = folderNameMap[folderId] || folderId;
 
     // --- フォルダタイトル ---
     const title = document.createElement("h3");
     title.textContent = `📁 ${folderName}`;
-    title.style.marginTop = "20px";
-    title.style.color = "#333";
+    title.style.margin = "16px 0 8px";
     container.appendChild(title);
 
-    // --- 曲リスト ---
+    // --- 曲カード一覧 ---
     songs.forEach(song => {
-      const li = document.createElement("div");
-      li.textContent = song.name;
-      li.style.cursor = "pointer";
-      li.style.padding = "4px 0";
+      const item = document.createElement("div");
+      item.className = "song-item";
 
-      if (song.id === currentPlayingId) {
-        li.style.background = "#d0f0ff";
-      }
+      // カバー画像（今は仮）
+      const cover = document.createElement("img");
+      cover.className = "song-cover";
+      cover.src = "img/default-cover.png"; // なければ仮画像
 
-      li.onclick = () => {
+      // 曲情報
+      const info = document.createElement("div");
+      info.className = "song-info";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "song-title";
+      titleEl.textContent = song.name;
+
+      const artistEl = document.createElement("div");
+      artistEl.className = "song-artist";
+      artistEl.textContent = "Unknown Artist";
+
+      info.appendChild(titleEl);
+      info.appendChild(artistEl);
+
+      // カードに追加
+      item.appendChild(cover);
+      item.appendChild(info);
+
+      // 再生
+      item.onclick = () => {
         playSong(song);
         currentPlayingId = song.id;
         renderFolderLists();
       };
 
-      container.appendChild(li);
+      container.appendChild(item);
     });
   }
 }
+
+
 
 
 
