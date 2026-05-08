@@ -331,6 +331,3 @@ function playSong(song) {
   document.getElementById("nowPlaying").textContent =
     `▶ 再生中: ${song.name}`;
 }
-
-let folderSongsMap = {};  
-// 例： folderSongsMap[folderId] = [song1, song2, ...]
