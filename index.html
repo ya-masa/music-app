@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>OneDrive Music List</title>
-  <link rel="stylesheet" href="style/main.css">
+<meta charset="UTF-8">
+<title>Music App</title>
+<link rel="stylesheet" href="main.css">
 </head>
-<body>
-  <h1>OneDrive Music List</h1>
 
-  <button id="loginBtn">Microsoft にサインイン</button>
-  
-  <button id="chooseFolderBtn" disabled>フォルダを選ぶ</button>
-    <!-- ★ これが必要だった！ -->
-  <div id="currentFolder"></div>
+<body>
+
+  <header class="header">
+    <div class="app-title">🎵 My Music App</div>
+    <button id="loginBtn">OneDrive にログイン</button>
+    <button id="chooseFolderBtn" disabled>フォルダを選ぶ</button>
+  </header>
+
+  <!-- フォルダ選択画面 -->
   <div id="folderList"></div>
 
-  <h2>曲リスト</h2>
-  <ul id="trackList"></ul>
-  <h2 id="nowPlaying">▶ 再生中: なし</h2>
+  <!-- ダウンロード済みリスト -->
+  <div id="trackList"></div>
 
-  <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
-  <script src="js/music-app.js"></script>
+  <!-- 再生中 -->
+  <div id="nowPlaying" style="padding:20px; font-size:18px;"></div>
+
+<script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
-<style>
-  
-</style>
+
 
