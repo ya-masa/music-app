@@ -88,11 +88,13 @@ async function listRootFolders() {
   );
 
   const data = await res.json();
+
+  // フォルダだけ返す
   return data.value.filter(item => item.folder);
 }
 
 /* ==========================
-   OneDrive 子フォルダ表示
+   OneDrive 子フォルダ表示（修正版）
 ========================== */
 async function showFolderChildren(folderId, parentName) {
   currentFolderId = folderId;
@@ -105,34 +107,83 @@ async function showFolderChildren(folderId, parentName) {
   const container = document.getElementById("folderList");
   container.innerHTML = "";
 
+  /* --------------------------
+     ★ ルートに戻るボタン
+  -------------------------- */
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "📁 ルートフォルダを開く";
+  backBtn.className = "save-btn";
+  backBtn.onclick = async () => {
+    const rootFolders = await listRootFolders();
+    renderRootFolderList(rootFolders);
+  };
+  container.appendChild(backBtn);
+
+  /* --------------------------
+     ★ このフォルダに決定ボタン
+  -------------------------- */
+  const decideBtn = document.createElement("button");
+  decideBtn.textContent = "🎵 このフォルダに決定";
+  decideBtn.className = "save-btn";
+  decideBtn.style.marginLeft = "10px";
+  decideBtn.onclick = () => {
+    loadMusicFromFolder(folderId, parentName);
+  };
+  container.appendChild(decideBtn);
+
+  /* --------------------------
+     ★ 子フォルダ・曲のカード表示
+  -------------------------- */
   data.value.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "folder-item";
-    div.textContent = item.name;
-
     if (item.folder) {
-      div.onclick = () => showFolderChildren(item.id, item.name);
+      // フォルダカード
+      renderFolderCard(container, item);
     } else if (item.name.match(/\.(mp3|wav|m4a)$/i)) {
-      div.onclick = () => addSingleSong(item);
+      // 曲カード
+      renderSongCard(container, item);
     }
-
-    container.appendChild(div);
   });
 }
 
+
 /* ==========================
    ⑦ フォルダカード（CSS対応）
+========================== */
+function renderFolderCard(container, item) {
+  const card = document.createElement("div");
+  card.className = "song-item";
+
+  const cover = document.createElement("img");
+  cover.className = "song-cover";
+  cover.src = "assets/images/folder.png";
+
+  const info = document.createElement("div");
+  info.className = "song-info";
+
+  const title = document.createElement("div");
+  title.className = "song-title";
+  title.textContent = item.name;
+
+  info.appendChild(title);
+
+  card.appendChild(cover);
+  card.appendChild(info);
+
+  card.onclick = () => showFolderChildren(item.id, item.name);
+
+  container.appendChild(card);
+}
+/* ==========================
+   ⑦ 曲カード（CSS対応）
 ========================== */
 function renderSongCard(container, item) {
   const card = document.createElement("div");
   card.className = "song-item";
 
-  // カバー画像
   const cover = document.createElement("img");
   cover.className = "song-cover";
   cover.src = "assets/images/music-note.png";
 
-  // 情報
   const info = document.createElement("div");
   info.className = "song-info";
 
@@ -142,28 +193,26 @@ function renderSongCard(container, item) {
 
   const artist = document.createElement("div");
   artist.className = "song-artist";
-  artist.textContent = ""; // ← 後でフォルダ階層から入れる
+  artist.textContent = currentFolderParentName || "";
 
   info.appendChild(title);
   info.appendChild(artist);
 
-  // 追加ボタン
   const addBtn = document.createElement("button");
   addBtn.className = "save-btn";
   addBtn.textContent = "追加";
-
   addBtn.onclick = (e) => {
-    e.stopPropagation(); // カードクリックと区別
+    e.stopPropagation();
     addSingleSong(item);
   };
 
-  // カード構築
   card.appendChild(cover);
   card.appendChild(info);
   card.appendChild(addBtn);
 
   container.appendChild(card);
 }
+
 
 /* ==========================
    downloadUrl を毎回取得
@@ -200,6 +249,7 @@ async function loadMusicFromFolder(folderId, albumName) {
 
   renderSelectedList();
 }
+
 
 
 /* ==========================
