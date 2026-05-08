@@ -166,18 +166,6 @@ async function showFolderChildren(folderId, folderName) {
 }
 
 // ==========================
-// ⑧ 決定ボタンを押下する
-// ==========================
-decideBtn.onclick = () => {
-  // フォルダ名も一緒に保存しておく
-  folderNameMap[folderId] = currentFolderName; // ← ここは後で説明する
-
-  localStorage.setItem("musicFolderId", folderId);
-  loadMusicFromFolder(folderId);
-  container.innerHTML = "";
-};
-
-// ==========================
 // ⑧ 決定ボタン押下時の動作
 // ==========================
 async function loadMusicFromFolder(folderId) {
