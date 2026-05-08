@@ -75,6 +75,7 @@ chooseFolderBtn.onclick = async () => {
 
   folders.forEach(item => {
     showFolderChildren(item.id, item.name);
+    console.log("item=",item);
   });
 };
 
