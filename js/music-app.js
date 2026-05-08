@@ -5,7 +5,6 @@
 const msalConfig = {
   auth: {
     clientId: "b828c8e4-f06f-4c6e-b0fe-b6401516a1e1",
-    authority: "https://login.microsoftonline.com/common",
     redirectUri: "https://ya-masa.github.io/music-app/"
   }
 };
@@ -31,7 +30,7 @@ let folderNameMap  = {};     // フォルダID → フォルダ名
 // ② ページ読み込み時
 // ==========================
 window.addEventListener("load", async () => {
-  msalInstance.handleRedirectPromise().then(async (response) => {
+ /* msalInstance.handleRedirectPromise().then(async (response) => {
 
     if (response) {
       await handleLogin(response.account);
@@ -50,7 +49,7 @@ window.addEventListener("load", async () => {
         await loadMusicFromFolder(savedFolderId);
       }
     }
-  });
+  });*/
 });
 
 
