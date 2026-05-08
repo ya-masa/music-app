@@ -78,9 +78,6 @@ async function login() {
   }
 }
 
-
-
-
 /* ==========================
    ⑤ ルート直下のフォルダ一覧取得
 ========================== */
@@ -167,69 +164,6 @@ function renderSongCard(container, item) {
 
   container.appendChild(card);
 }
-
-
-
-
-/* ==========================
-   ⑩再生リスト表示
-========================== */
-function renderSelectedList() {
-  const container = document.getElementById("trackList");
-  container.innerHTML = "";
-
-  selectedSongs.forEach((song, index) => {
-    const item = document.createElement("div");
-    item.className = "song-item";
-
-    // カバー画像
-    const cover = document.createElement("img");
-    cover.className = "song-cover";
-    cover.src = "assets/images/music-note.png";
-
-    // 曲情報
-    const info = document.createElement("div");
-    info.className = "song-info";
-
-    const titleEl = document.createElement("div");
-    titleEl.className = "song-title";
-    titleEl.textContent = song.name;
-
-    const artistEl = document.createElement("div");
-    artistEl.className = "song-artist";
-    artistEl.textContent = `${song.artist} / ${song.album}`;
-
-    info.appendChild(titleEl);
-    info.appendChild(artistEl);
-
-    // ▶ 再生ボタン
-    const playBtn = document.createElement("button");
-    playBtn.className = "save-btn";
-    playBtn.textContent = "▶";
-    playBtn.onclick = (e) => {
-      e.stopPropagation();
-      playFromList(index);
-    };
-
-    // 🔀 シャッフルボタン
-    const shuffleBtn = document.createElement("button");
-    shuffleBtn.className = "save-btn";
-    shuffleBtn.textContent = "🔀";
-    shuffleBtn.onclick = (e) => {
-      e.stopPropagation();
-      shufflePlay();
-    };
-
-    // カード構築
-    item.appendChild(cover);
-    item.appendChild(info);
-    item.appendChild(playBtn);
-    item.appendChild(shuffleBtn);
-
-    container.appendChild(item);
-  });
-}
-
 
 /* ==========================
    downloadUrl を毎回取得
