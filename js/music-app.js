@@ -165,35 +165,6 @@ async function showFolderChildren(folderId, folderName) {
   });
 }
 
-// ==========================
-// ⑧ 決定ボタン押下時の動作
-// ==========================
-async function loadMusicFromFolder(folderId) {
-  console.log("選択フォルダID:", folderId);
-
-  // ① 再帰的に曲一覧を取得
-  const songs = await getFilesRecursively(folderId);
-
-  // ② downloadUrl を付与
-  for (let song of songs) {
-    const urlRes = await fetch(
-      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-
-    const data = await urlRes.json();
-    song["@microsoft.graph.downloadUrl"] = data["@microsoft.graph.downloadUrl"];
-  }
-
-  // ③ 曲一覧を表示
-  renderSongList(songs);
-
-  // ④ 最初の曲を再生
-  if (songs.length > 0) {
-    playSong(songs[0]);
-  }
-}
-
 
 // ==========================
 // ⑧ 再帰的に曲を取得
