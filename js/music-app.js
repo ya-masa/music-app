@@ -93,7 +93,7 @@ async function handleLogin(account) {
 // ⑤ フォルダ選択ボタン
 // ==========================
 chooseFolderBtn.onclick = () => {
-  listRootFolders();
+  showFolderChildren();
 };
 
 
