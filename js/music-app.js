@@ -58,7 +58,7 @@ function login() {
       chooseFolderBtn.disabled = false;
 
       // ログイン後すぐフォルダ選択を開く
-      const folders = await listRootFolders();
+      const folders = listRootFolders();
 
       const container = document.getElementById("folderList");
       container.innerHTML = "";
