@@ -309,12 +309,29 @@ function renderFolderLists() {
 // ==========================
 // ⑪ 再生
 // ==========================
-function playSong(song) {
+async function playSong(song) {
   if (currentAudio) {
     currentAudio.pause();
   }
 
-  currentAudio = new Audio(song["@microsoft.graph.downloadUrl"]);
+  // ① 再生用URLを取得（毎回新鮮なURL）
+  const urlRes = await fetch(
+    `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  const data = await urlRes.json();
+  const url = data["@microsoft.graph.downloadUrl"];
+
+  console.log("再生URL:", url);
+
+  if (!url) {
+    alert("この曲のURLが取得できませんでした: " + song.name);
+    return;
+  }
+
+  // ② 再生
+  currentAudio = new Audio(url);
   currentAudio.play();
 
   document.getElementById("nowPlaying").textContent =
