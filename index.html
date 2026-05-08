@@ -20,12 +20,32 @@
   <!-- ダウンロード済みリスト -->
   <div id="trackList"></div>
 
-  <!-- 再生中 -->
-  <div id="nowPlaying" style="padding:20px; font-size:18px;"></div>
+<!-- ==========================
+     下部固定ミニプレイヤー
+========================== -->
+<div id="mini-player">
+  <div class="mini-row">
+    <img id="mini-cover" class="mini-cover" src="assets/images/music-note.png">
+
+    <div class="mini-info">
+      <span id="mini-title" class="mini-title">再生中なし</span>
+      <span id="mini-artist" class="mini-artist"></span>
+    </div>
+
+    <div class="mini-controls">
+      <button id="mini-playbtn" class="mini-playbtn">▶</button>
+      <button id="mini-repeat-btn" class="mini-repeat-btn">🔁</button>
+    </div>
+  </div>
+
+  <div class="mini-progress">
+    <span id="mini-current">0:00</span>
+    <input id="mini-slider" class="mini-slider" type="range" min="0" max="100" value="0">
+    <span id="mini-duration">0:00</span>
+  </div>
+</div>
 
 <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
-<script src="app.js"></script>
+<script src="music-app.js"></script>
 </body>
 </html>
-
-

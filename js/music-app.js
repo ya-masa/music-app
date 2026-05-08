@@ -15,6 +15,14 @@ const msalInstance = new msal.PublicClientApplication(msalConfig);
 let accessToken = null;
 let currentAudio = null;
 let currentPlayingId = null;
+let currentFolderId = null;
+let currentFolderParentName = null;
+
+let selectedSongs = [];
+let currentIndex = 0;
+let isRepeating = false;
+
+const audio = document.getElementById("audio");
 
 // HTML 要素
 const loginBtn = document.getElementById("loginBtn");
@@ -24,17 +32,13 @@ const trackList = document.getElementById("trackList");
 let folderSongsMap = {};     // フォルダID → 曲配列
 let folderNameMap  = {};     // フォルダID → フォルダ名
 
-
 /* ==========================
-   ② ページ読み込み時：保存フォルダを復元
+   追加（選曲リスト & 再生管理）
 ========================== */
-window.addEventListener("load", async () => {
-  const saved = JSON.parse(localStorage.getItem("savedFolders") || "[]");
-
-  for (const folderId of saved) {
-    await loadMusicFromFolder(folderId);
-  }
-});
+let selectedSongs = [];   // 選曲リスト（1つだけ）
+let audio = new Audio();  // mini-player と同期
+let currentIndex = 0;     // 再生中の曲番号
+let isRepeating = false;  // 1曲リピート
 
 
 /* ==========================
@@ -59,7 +63,7 @@ function login() {
       chooseFolderBtn.disabled = false;
 
       // ログイン後すぐフォルダ選択を開く
-      chooseFolderBtn.click();
+      listRootFolders();
     })
     .catch(err => console.error("ログインエラー", err));
 }
@@ -108,173 +112,362 @@ async function showFolderChildren(folderId, folderName) {
   const container = document.getElementById("folderList");
   container.innerHTML = "";
 
-  // ★ 決定ボタン
+  /* ==========================
+     ★ フォルダ名を先に表示
+  ========================== */
+  const folderTitle = document.createElement("div");
+  folderTitle.textContent = `📁 ${folderName}`;
+  folderTitle.style.fontSize = "20px";
+  folderTitle.style.fontWeight = "bold";
+  folderTitle.style.margin = "10px 0";
+  container.appendChild(folderTitle);
+
+  /* ==========================
+     ★ 決定ボタン
+  ========================== */
   const decideBtn = document.createElement("button");
   decideBtn.textContent = "このフォルダを使う";
   decideBtn.style.margin = "10px 0";
+
   decideBtn.onclick = () => {
     folderNameMap[folderId] = folderName;
-    loadMusicFromFolder(folderId);
+    loadMusicFromFolder(folderId);   // ← 選曲リストに追加する処理
     container.innerHTML = "";
   };
+
   container.appendChild(decideBtn);
 
-  // ★ 子フォルダだけカード表示（曲は表示しない）
+  /* ==========================
+     ★ 子フォルダと曲を表示
+  ========================== */
   items.forEach(item => {
     if (item.folder) {
+      // フォルダ → カード表示
       renderFolderCard(container, item.id, item.name);
+
+    } else if (item.file && item.file.mimeType.startsWith("audio")) {
+      // 曲 → 曲カード表示
+      renderSongCard(container, item);
     }
   });
 }
 
-
 /* ==========================
    ⑦ フォルダカード（CSS対応）
 ========================== */
-function renderFolderCard(container, folderId, folderName) {
+function renderSongCard(container, item) {
   const card = document.createElement("div");
   card.className = "song-item";
 
-  const icon = document.createElement("div");
-  icon.className = "song-cover";
-  icon.style.background = "#ccc";
-  icon.textContent = "📁";
-  icon.style.display = "flex";
-  icon.style.alignItems = "center";
-  icon.style.justifyContent = "center";
+  // カバー画像
+  const cover = document.createElement("img");
+  cover.className = "song-cover";
+  cover.src = "assets/images/music-note.png";
 
+  // 情報
   const info = document.createElement("div");
   info.className = "song-info";
 
-  const name = document.createElement("div");
-  name.className = "song-title";
-  name.textContent = folderName;
+  const title = document.createElement("div");
+  title.className = "song-title";
+  title.textContent = item.name;
 
-  info.appendChild(name);
-  card.appendChild(icon);
+  const artist = document.createElement("div");
+  artist.className = "song-artist";
+  artist.textContent = ""; // ← 後でフォルダ階層から入れる
+
+  info.appendChild(title);
+  info.appendChild(artist);
+
+  // 追加ボタン
+  const addBtn = document.createElement("button");
+  addBtn.className = "save-btn";
+  addBtn.textContent = "追加";
+
+  addBtn.onclick = (e) => {
+    e.stopPropagation(); // カードクリックと区別
+    addSingleSong(item);
+  };
+
+  // カード構築
+  card.appendChild(cover);
   card.appendChild(info);
-
-  card.onclick = () => showFolderChildren(folderId, folderName);
+  card.appendChild(addBtn);
 
   container.appendChild(card);
 }
 
 
-/* ==========================
-   ⑧ 再帰的に曲を取得
-========================== */
-async function getFilesRecursively(folderId) {
-  const res = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-
-  const data = await res.json();
-  let files = [];
-
-  for (let item of data.value) {
-    if (item.folder) {
-      const subFiles = await getFilesRecursively(item.id);
-      files = files.concat(subFiles);
-    } else if (item.file && item.file.mimeType.startsWith("audio/")) {
-      files.push(item);
-    }
-  }
-
-  return files;
-}
 
 
 /* ==========================
    ⑨ 曲を読み込み → 保存 → 表示
 ========================== */
 async function loadMusicFromFolder(folderId) {
+  // ① フォルダ内の曲を再帰的に取得
   const songs = await getFilesRecursively(folderId);
 
-  folderSongsMap[folderId] = songs;
+  // ② アルバム名（このフォルダ名）
+  const albumName = folderNameMap[folderId] || "Unknown Album";
 
-  // 保存
-  localStorage.setItem("savedFolders", JSON.stringify(Object.keys(folderSongsMap)));
+  // ③ アーティスト名（親フォルダ名を使う）
+  // showFolderChildren() で folderNameMap に保存している前提
+  let artistName = "Unknown Artist";
 
-  // 表示
-  renderDownloadedLists();
+  // 親フォルダ名を取得（folderNameMap に保存されている）
+  if (folderNameMap["parent"]) {
+    artistName = folderNameMap["parent"];
+  }
+
+  // ④ 選曲リストをクリア（1つだけ保持）
+  selectedSongs = [];
+
+  // ⑤ 曲を selectedSongs に追加（folderId を保持）
+  for (const song of songs) {
+    const urlRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const data = await urlRes.json();
+
+    selectedSongs.push({
+      id: song.id,
+      folderId: folderId,          // ★ フォルダID方式を保持
+      name: song.name,
+      url: data["@microsoft.graph.downloadUrl"],
+      artist: artistName,
+      album: albumName
+    });
+  }
+
+  // ⑥ 選曲リストを表示
+  renderSelectedList();
 }
 
 
+
+
 /* ==========================
-   ⑩ ダウンロード済みリスト表示（カード型）
+   ⑩再生リスト表示
 ========================== */
-function renderDownloadedLists() {
+function renderSelectedList() {
   const container = document.getElementById("trackList");
   container.innerHTML = "";
 
-  for (const folderId in folderSongsMap) {
-    const songs = folderSongsMap[folderId];
-    const folderName = folderNameMap[folderId] || folderId;
+  selectedSongs.forEach((song, index) => {
+    const item = document.createElement("div");
+    item.className = "song-item";
 
-    // フォルダタイトル
-    const title = document.createElement("h3");
-    title.textContent = `📁 ${folderName}`;
-    title.style.margin = "16px 0 8px";
-    container.appendChild(title);
+    // カバー画像
+    const cover = document.createElement("img");
+    cover.className = "song-cover";
+    cover.src = "assets/images/music-note.png";
 
-    // 曲カード
-    songs.forEach(song => {
-      const item = document.createElement("div");
-      item.className = "song-item";
+    // 曲情報
+    const info = document.createElement("div");
+    info.className = "song-info";
 
-      const cover = document.createElement("img");
-      cover.className = "song-cover";
-      cover.src = "img/default-cover.png";
+    const titleEl = document.createElement("div");
+    titleEl.className = "song-title";
+    titleEl.textContent = song.name;
 
-      const info = document.createElement("div");
-      info.className = "song-info";
+    const artistEl = document.createElement("div");
+    artistEl.className = "song-artist";
+    artistEl.textContent = `${song.artist} / ${song.album}`;
 
-      const titleEl = document.createElement("div");
-      titleEl.className = "song-title";
-      titleEl.textContent = song.name;
+    info.appendChild(titleEl);
+    info.appendChild(artistEl);
 
-      const artistEl = document.createElement("div");
-      artistEl.className = "song-artist";
-      artistEl.textContent = "Unknown Artist";
+    // ▶ 再生ボタン
+    const playBtn = document.createElement("button");
+    playBtn.className = "save-btn";
+    playBtn.textContent = "▶";
+    playBtn.onclick = (e) => {
+      e.stopPropagation();
+      playFromList(index);
+    };
 
-      info.appendChild(titleEl);
-      info.appendChild(artistEl);
+    // 🔀 シャッフルボタン
+    const shuffleBtn = document.createElement("button");
+    shuffleBtn.className = "save-btn";
+    shuffleBtn.textContent = "🔀";
+    shuffleBtn.onclick = (e) => {
+      e.stopPropagation();
+      shufflePlay();
+    };
 
-      item.appendChild(cover);
-      item.appendChild(info);
+    // カード構築
+    item.appendChild(cover);
+    item.appendChild(info);
+    item.appendChild(playBtn);
+    item.appendChild(shuffleBtn);
 
-      item.onclick = () => playSong(song);
-
-      container.appendChild(item);
-    });
-  }
+    container.appendChild(item);
+  });
 }
 
 
 /* ==========================
-   ⑪ 再生（URLをその場で取得）
+   downloadUrl を毎回取得
 ========================== */
-async function playSong(song) {
-  if (currentAudio) currentAudio.pause();
-
+async function getDownloadUrl(id) {
   const urlRes = await fetch(
-    `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
+    `https://graph.microsoft.com/v1.0/me/drive/items/${id}?select=@microsoft.graph.downloadUrl`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
-
   const data = await urlRes.json();
-  const url = data["@microsoft.graph.downloadUrl"];
+  return data["@microsoft.graph.downloadUrl"];
+}
+
+
+/* ==========================
+   アルバム読み込み
+========================== */
+async function loadMusicFromFolder(folderId, albumName) {
+  const songs = await getFilesRecursively(folderId);
+
+  const artistName = currentFolderParentName || "Unknown Artist";
+
+  selectedSongs = [];
+
+  for (const song of songs) {
+    selectedSongs.push({
+      id: song.id,
+      folderId: folderId,
+      name: song.name,
+      artist: artistName,
+      album: albumName
+    });
+  }
+
+  renderSelectedList();
+}
+
+
+/* ==========================
+   単曲追加
+========================== */
+async function addSingleSong(item) {
+  const albumName = item.parentReference?.name || "Unknown Album";
+  const artistName = currentFolderParentName || "Unknown Artist";
+
+  selectedSongs.push({
+    id: item.id,
+    folderId: currentFolderId,
+    name: item.name,
+    artist: artistName,
+    album: albumName
+  });
+
+  renderSelectedList();
+}
+
+
+/* ==========================
+   再生リスト表示
+========================== */
+function renderSelectedList() {
+  const container = document.getElementById("trackList");
+  container.innerHTML = "";
+
+  selectedSongs.forEach((song, index) => {
+    const item = document.createElement("div");
+    item.className = "song-item";
+
+    const cover = document.createElement("img");
+    cover.className = "song-cover";
+    cover.src = "assets/images/music-note.png";
+
+    const info = document.createElement("div");
+    info.className = "song-info";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "song-title";
+    titleEl.textContent = song.name;
+
+    const artistEl = document.createElement("div");
+    artistEl.className = "song-artist";
+    artistEl.textContent = `${song.artist} / ${song.album}`;
+
+    info.appendChild(titleEl);
+    info.appendChild(artistEl);
+
+    const playBtn = document.createElement("button");
+    playBtn.className = "save-btn";
+    playBtn.textContent = "▶";
+    playBtn.onclick = (e) => {
+      e.stopPropagation();
+      playFromList(index);
+    };
+
+    const shuffleBtn = document.createElement("button");
+    shuffleBtn.className = "save-btn";
+    shuffleBtn.textContent = "🔀";
+    shuffleBtn.onclick = (e) => {
+      e.stopPropagation();
+      shufflePlay();
+    };
+
+    item.appendChild(cover);
+    item.appendChild(info);
+    item.appendChild(playBtn);
+    item.appendChild(shuffleBtn);
+
+    container.appendChild(item);
+  });
+}
+/* ==========================
+   ID で再生する
+========================== */
+async function playFromList(index) {
+  currentIndex = index;
+  const song = selectedSongs[index];
+
+  const url = await getDownloadUrl(song.id);
 
   if (!url) {
     alert("URL取得失敗: " + song.name);
     return;
   }
 
-  currentAudio = new Audio(url);
-  currentAudio.play();
+  audio.src = url;
+  audio.play();
+
+  updateMiniPlayer(song);
 
   document.getElementById("nowPlaying").textContent =
     `▶ 再生中: ${song.name}`;
 }
 
+/* ==========================
+   ミニプレイヤー更新
+========================== */
+function updateMiniPlayer(song) {
+  document.getElementById("mini-cover").src = "assets/images/music-note.png";
+  document.getElementById("mini-title").textContent = song.name;
+  document.getElementById("mini-artist").textContent = `${song.artist} / ${song.album}`;
+  document.getElementById("mini-playbtn").textContent = "⏸";
+}
+
+/* ==========================
+   曲終了時の処理
+========================== */
+audio.onended = () => {
+  if (isRepeating) {
+    playFromList(currentIndex);
+  } else {
+    currentIndex++;
+    if (currentIndex < selectedSongs.length) {
+      playFromList(currentIndex);
+    }
+  }
+};
+
+
+/* ==========================
+   シャッフル再生
+========================== */
+function shufflePlay() {
+  const index = Math.floor(Math.random() * selectedSongs.length);
+  playFromList(index);
+}
