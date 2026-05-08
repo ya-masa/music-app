@@ -41,7 +41,7 @@ let isRepeating = false;  // 1曲リピート
 ========================== */
 loginBtn.onclick = () => login();
 
-function login() {
+async function login() {
   alert("Microsoft のログイン画面に移動します");
 
   msalInstance.loginPopup(loginRequest)
@@ -58,14 +58,17 @@ function login() {
       chooseFolderBtn.disabled = false;
 
       // ログイン後すぐフォルダ選択を開く
-      const folders = listRootFolders();
+      const folders = await listRootFolders();
 
       const container = document.getElementById("folderList");
       container.innerHTML = "";
 
-      folders.forEach(item => {
-        showFolderChildren(item.id, item.name);
-        console.log("item=",item);
+      // フォルダ一覧を表示
+      folders.forEach(folder => {
+        const div = document.createElement("div");
+        div.textContent = folder.name;
+        div.onclick = () => showFolderChildren(folder.id, folder.name);
+        container.appendChild(div);
       });
     })
     .catch(err => console.error("ログインエラー", err));
