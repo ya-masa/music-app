@@ -65,6 +65,7 @@ function login() {
       // UI 更新
       loginBtn.disabled = true;
       chooseFolderBtn.disabled = false;
+      listRootFolders();
     })
     .catch(err => {
       console.error("ログインエラー", err);
