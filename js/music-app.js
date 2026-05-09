@@ -451,13 +451,14 @@ function updateMiniPlayer(song) {
   document.getElementById("mini-artist").textContent = `${song.artist} / ${song.album}`;
   document.getElementById("mini-playbtn").textContent = "⏸";
   document.getElementById("mini-playbtn").classList.add("playing");   // ON → 薄い赤
-}
-document.getElementById("mini-playbtn").onclick(){
-  if(document.getElementById("mini-playbtn").textContent === "⏸") {
-    document.getElementById("mini-playbtn").classList.remove("playing"); 
-    document.getElementById("mini-playbtn").textContent = "▶";
+  document.getElementById("mini-playbtn").onclick = () => {
+    if(document.getElementById("mini-playbtn").textContent === "⏸") {
+      document.getElementById("mini-playbtn").classList.remove("playing"); 
+      document.getElementById("mini-playbtn").textContent = "▶";
+    }
   }
 }
+
 /* ==========================
    曲終了時の処理プリフェッチ
 ========================== */
