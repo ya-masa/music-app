@@ -114,8 +114,19 @@ async function showFolderChildren(folderId, parentName) {
   backBtn.textContent = "📁 ルートフォルダを開く";
   backBtn.className = "save-btn";
   backBtn.onclick = async () => {
-    const rootFolders = await listRootFolders();
-    listRootFolders();
+      // ③ フォルダ一覧取得（await OK）
+      const folders = await listRootFolders();
+
+      const container = document.getElementById("folderList");
+      container.innerHTML = "";
+
+      // ④ フォルダ一覧を表示
+      folders.forEach(folder => {
+        const div = document.createElement("div");
+        div.textContent = folder.name;
+        div.onclick = () => showFolderChildren(folder.id, folder.name);
+        container.appendChild(div);
+      });
   };
   container.appendChild(backBtn);
 
@@ -127,7 +138,7 @@ async function showFolderChildren(folderId, parentName) {
   decideBtn.className = "save-btn";
   decideBtn.style.marginLeft = "10px";
   decideBtn.onclick = () => {
-    loadMusicFromFolder(folderId, parentName);
+    getFilesRecursively(folder.id);
   };
   container.appendChild(decideBtn);
 
