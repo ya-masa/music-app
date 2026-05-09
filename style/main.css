@@ -261,7 +261,7 @@ body {
 #mini-player {
   height: 52px;  
   background: #f0e6d8; /* ほんのりベージュ */
-  border-radius: 16px; /* ← ここがポイント */
+  border-radius: 12px; /* ← ここがポイント */
   border-top: 1px solid #ddd;
   display: flex;
   align-items: center;
@@ -312,6 +312,7 @@ body {
 .mini-artist {
   font-size: 14px;
   color: #666;
+  font-weight: 400; /* ← 標準 */
 }
 
 .mini-title {
@@ -321,6 +322,8 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #5a4633; /* ← 優しい濃いブラウン */
+  font-weight: 400; /* ← 標準 */
 }
 
 .mini-controls .icon {
