@@ -237,67 +237,6 @@ function renderSongCard(container, item) {
   container.appendChild(card);
 }
 
-/* ==========================
-   曲カードをスワイプすると削除ボタンが出てくる
-========================== */
-songs.forEach((song, index) => {
-  const card = document.createElement("div");
-  card.className = "song-card";
-
-  const title = document.createElement("div");
-  title.className = "song-title";
-  title.textContent = song.name;
-
-  const del = document.createElement("div");
-  del.className = "song-delete-swipe";
-  del.textContent = "🗑️";
-
-  del.onclick = (e) => {
-    e.stopPropagation();
-    songs.splice(index, 1);
-    renderFolderLists();
-  };
-
-  card.appendChild(title);
-  card.appendChild(del);
-
-  // --- スワイプ処理 ---
-  let startX = 0;
-  let currentX = 0;
-  let swiped = false;
-
-  card.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-  });
-
-  card.addEventListener("touchmove", (e) => {
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-
-    if (diff < -20) {
-      // 左スワイプ
-      card.style.transform = "translateX(-80px)";
-      del.style.transform = "translateX(0)";
-      swiped = true;
-    }
-    if (diff > 20 && swiped) {
-      // 右に戻す
-      card.style.transform = "translateX(0)";
-      del.style.transform = "translateX(100%)";
-      swiped = false;
-    }
-  });
-
-  // 再生
-  card.onclick = () => {
-    if (swiped) return; // スワイプ中は再生しない
-    playSong(song);
-    currentPlayingId = song.id;
-    renderFolderLists();
-  };
-
-  container.appendChild(card);
-});
 
 /* ==========================
    downloadUrl を毎回取得
@@ -418,6 +357,68 @@ function renderSelectedList() {
     item.appendChild(shuffleBtn);
 
     container.appendChild(item);
+    /* ==========================
+    曲カードをスワイプすると削除ボタンが出てくる
+    ========================== */
+    songs.forEach((song, index) => {
+      const card = document.createElement("div");
+      card.className = "song-card";
+
+      const title = document.createElement("div");
+      title.className = "song-title";
+      title.textContent = song.name;
+
+      const del = document.createElement("div");
+      del.className = "song-delete-swipe";
+      del.textContent = "🗑️";
+
+      del.onclick = (e) => {
+        e.stopPropagation();
+        songs.splice(index, 1);
+        renderFolderLists();
+      };
+
+        card.appendChild(title);
+        card.appendChild(del);
+
+        // --- スワイプ処理 ---
+        let startX = 0;
+        let currentX = 0;
+        let swiped = false;
+
+        card.addEventListener("touchstart", (e) => {
+          startX = e.touches[0].clientX;
+        });
+
+        card.addEventListener("touchmove", (e) => {
+          currentX = e.touches[0].clientX;
+          const diff = currentX - startX;
+
+          if (diff < -20) {
+            // 左スワイプ
+            card.style.transform = "translateX(-80px)";
+            del.style.transform = "translateX(0)";
+            swiped = true;
+          }
+          if (diff > 20 && swiped) {
+            // 右に戻す
+            card.style.transform = "translateX(0)";
+            del.style.transform = "translateX(100%)";
+            swiped = false;
+          }
+    });
+
+    // 再生
+    card.onclick = () => {
+      if (swiped) return; // スワイプ中は再生しない
+      playSong(song);
+      currentPlayingId = song.id;
+      renderFolderLists();
+    };
+
+    container.appendChild(card);
+  });
+
   });
 }
 /* ==========================
