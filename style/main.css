@@ -44,6 +44,56 @@ body {
 }
 
 /* ==========================
+   再生・シャッフルボタン
+========================== */
+.playlist-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.playlist-controls button {
+  width: 140px;
+  height: 48px;
+  border-radius: 999px;
+  border: none;
+  background: #4a90e2;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* ← アイコンと文字の間 */
+}
+
+.playlist-controls button img {
+  width: 20px;
+  height: 20px;
+  filter: invert(100%); /* ← 白に変換（青背景に映える） */
+}
+
+.playlist-controls button img.icon {
+  width: 22px;
+  height: 22px;
+  filter: invert(100%); /* 黒アイコンを白に変換 */
+}
+
+@media (max-width: 600px) {
+  .playlist-controls button img.icon {
+    width: 26px;
+    height: 26px;
+  }
+  .playlist-controls button {
+    height: 56px;
+    font-size: 20px;
+  }
+}
+
+
+
+/* ==========================
    曲リスト
 ========================== */
 .song-list {
@@ -51,6 +101,38 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 10px 0;
+  position: relative;
+  overflow: hidden;
+  transition:transform 0.2s ease;
+}
+.song-delete-swipe{
+  position:absolute;
+  right: 0;
+  top: 0;
+  width: 80px;
+  height: 100%;
+  background: #e74c3c;
+  color:white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+.song-delete {
+  margin-left: auto;
+  font-size: 22px;
+  padding: 10px;
+  color: #777;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-delete:hover {
+  color: #e74c3c;
 }
 
 .song-item {
@@ -118,6 +200,28 @@ body {
   background: #ffe0e0;
   color: #aa0000;
 }
+
+@media (max-width: 600px) {
+  .song-card {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .song-title {
+    font-size: 18px;
+  }
+
+  .song-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .song-delete {
+    font-size: 26px;
+    padding: 14px;
+  }
+}
+
 /*==========================
   プレイヤー
 ========================== */
@@ -155,10 +259,15 @@ body {
    ミニプレイヤー
 ========================== */
 #mini-player {
+  height: 52px;  
+  background: #f0e6d8; /* ほんのりベージュ */
+  border-radius: 16px; /* ← ここがポイント */
+  border-top: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   padding: 6px 10px;
-  background: #f5f5f5;
-  border-top: 1px solid #ddd;
   box-sizing: border-box;
   position: fixed;
   bottom: 0;
@@ -185,8 +294,8 @@ body {
 }
 
 .mini-cover {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 6px;
   object-fit: cover;
 }
@@ -200,43 +309,33 @@ body {
   white-space: nowrap;
 }
 
-.mini-title {
-  font-size: 16px;
-  font-weight: bold;
-}
-
 .mini-artist {
   font-size: 14px;
   color: #666;
 }
 
-.mini-controls {
-  display: flex;
-  gap: 6px;
+.mini-title {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.mini-playbtn,
-.mini-repeat-btn,
-.mini-next-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mini-controls .icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  
+  transition: filter 0.2s ease;
 }
 
-.mini-repeat-btn {
-  background: #ffffff;
-  opacity: 0.4;
-  transition: 0.2s ease;
+/* 再生中だけ赤くする */
+.icon.playing {
+  filter: invert(18%) sepia(93%) saturate(7480%) hue-rotate(1deg) brightness(97%) contrast(108%);
 }
 
-.mini-repeat-btn.active {
-  opacity: 1;
-  border: 1px solid #aaa;
-}
 
 /* ==========================
    曲名スクロール
@@ -266,7 +365,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 999;
 }
 
 .spinner {
@@ -281,3 +380,4 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+

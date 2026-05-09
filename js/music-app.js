@@ -77,6 +77,19 @@ async function login() {
     console.error("ログインエラー", err);
   }
 }
+/* ==========================
+   ③ トークン切れの際の処理
+========================== */
+async function fetchWithAuth(url,options = {}){
+  let response = await fetch(url,options);
+
+  if (response.status === 401){
+      console.log("トークン切れ → 再ログインします");
+      await loginBtn.click();
+      response =await fetch(url,options);//再試行
+  }
+  return response;
+}
 
 /* ==========================
    ⑤ ルート直下のフォルダ一覧取得
@@ -224,6 +237,67 @@ function renderSongCard(container, item) {
   container.appendChild(card);
 }
 
+/* ==========================
+   曲カードをスワイプすると削除ボタンが出てくる
+========================== */
+songs.forEach((song, index) => {
+  const card = document.createElement("div");
+  card.className = "song-card";
+
+  const title = document.createElement("div");
+  title.className = "song-title";
+  title.textContent = song.name;
+
+  const del = document.createElement("div");
+  del.className = "song-delete-swipe";
+  del.textContent = "🗑️";
+
+  del.onclick = (e) => {
+    e.stopPropagation();
+    songs.splice(index, 1);
+    renderFolderLists();
+  };
+
+  card.appendChild(title);
+  card.appendChild(del);
+
+  // --- スワイプ処理 ---
+  let startX = 0;
+  let currentX = 0;
+  let swiped = false;
+
+  card.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+
+  card.addEventListener("touchmove", (e) => {
+    currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
+
+    if (diff < -20) {
+      // 左スワイプ
+      card.style.transform = "translateX(-80px)";
+      del.style.transform = "translateX(0)";
+      swiped = true;
+    }
+    if (diff > 20 && swiped) {
+      // 右に戻す
+      card.style.transform = "translateX(0)";
+      del.style.transform = "translateX(100%)";
+      swiped = false;
+    }
+  });
+
+  // 再生
+  card.onclick = () => {
+    if (swiped) return; // スワイプ中は再生しない
+    playSong(song);
+    currentPlayingId = song.id;
+    renderFolderLists();
+  };
+
+  container.appendChild(card);
+});
 
 /* ==========================
    downloadUrl を毎回取得
@@ -333,20 +407,9 @@ function renderSelectedList() {
     info.appendChild(titleEl);
     info.appendChild(artistEl);
 
-    const playBtn = document.createElement("button");
-    playBtn.className = "save-btn";
-    playBtn.textContent = "▶";
-    playBtn.onclick = (e) => {
+    item.onclick = (e) => {
       e.stopPropagation();
       playFromList(index);
-    };
-
-    const shuffleBtn = document.createElement("button");
-    shuffleBtn.className = "save-btn";
-    shuffleBtn.textContent = "🔀";
-    shuffleBtn.onclick = (e) => {
-      e.stopPropagation();
-      shufflePlay();
     };
 
     item.appendChild(cover);
@@ -368,6 +431,8 @@ async function playFromList(index) {
 
   if (!url) {
     alert("URL取得失敗: " + song.name);
+    loginBtn.onclick();
+    playFromList(index);
     return;
   }
 
@@ -385,27 +450,88 @@ function updateMiniPlayer(song) {
   document.getElementById("mini-title").textContent = song.name;
   document.getElementById("mini-artist").textContent = `${song.artist} / ${song.album}`;
   document.getElementById("mini-playbtn").textContent = "⏸";
+  document.getElementById("mini-playbtn").classList.add("playing");   // ON → 薄い赤
+}
+document.getElementById("mini-playbtn").onclick(){
+  if(document.getElementById("mini-playbtn").textContent === "⏸") {
+    document.getElementById("mini-playbtn").classList.remove("playing"); 
+    document.getElementById("mini-playbtn").textContent = "▶";
+  }
+}
+/* ==========================
+   曲終了時の処理プリフェッチ
+========================== */
+audio.addEventListener("timeupdate", () => {
+  if (audio.duration - audio.currentTime < 5) {
+    prefetchNextSong();
+  }
+});
+
+function prefetchNextSong() {
+  const nextIndex = (currentIndex + 1) % songs.length;
+  const nextSong = songs[nextIndex];
+
+  if (!nextSong.prefetched) {
+    fetch(nextSong.url).then(res => {
+      nextSong.prefetched = true;
+    });
+  }
 }
 
+
 /* ==========================
-   曲終了時の処理
+   再生ALLボタン押下時の処理
 ========================== */
-audio.onended = () => {
-  if (isRepeating) {
-    playFromList(currentIndex);
+document.getElementById("playAllBtn").onclick = () => {
+  if (songs.length === 0) return;
+  currentIndex = 0;
+  playSong(songs[0]);
+};
+/* ==========================
+   シャッフルALLボタン押下時の処理
+========================== */
+document.getElementById("shuffleAllBtn").onclick = () => {
+  if (songs.length === 0) return;
+  currentIndex = Math.floor(Math.random() * songs.length);
+  playSong(songs[currentIndex]);
+};
+
+/* ==========================
+   ネクストボタン押下時の処理
+========================== */
+document.getElementById("miniNext").onclick = () => {
+  currentIndex = (currentIndex + 1) % songs.length;
+  playSong(songs[currentIndex]);
+};
+let repeatMode = "off"; // off / all / one
+
+/* ==========================
+   リピート・リピートoneボタン押下時の処理
+========================== */
+document.getElementById("miniRepeat").onclick = () => {
+  if (repeatMode === "off") {
+    repeatMode = "all";
+    miniRepeat.src = "icons/repeat.svg";
+    miniRepeat.classList.add("playing");   // ON → 薄い赤
+  } else if (repeatMode === "all") {
+    repeatMode = "one";
+    miniRepeat.src = "icons/repeat-one.svg";
+    miniRepeat.classList.add("playing");   // ON → 薄い赤
   } else {
-    currentIndex++;
-    if (currentIndex < selectedSongs.length) {
-      playFromList(currentIndex);
-    }
+    repeatMode = "off";
+    miniRepeat.src = "icons/repeat.svg"; // グレー版にしてもOK
+    miniRepeat.classList.remove("playing"); // OFF → 黒
+
   }
 };
 
+function updateMiniPlayerState(isPlaying) {
+  const playIcon = document.getElementById("miniPlay");
 
-/* ==========================
-   シャッフル再生
-========================== */
-function shufflePlay() {
-  const index = Math.floor(Math.random() * selectedSongs.length);
-  playFromList(index);
+  if (isPlaying) {
+    playIcon.classList.add("playing");
+  } else {
+    playIcon.classList.remove("playing");
+  }
 }
+

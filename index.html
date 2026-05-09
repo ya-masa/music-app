@@ -18,8 +18,12 @@
   <div id="folderList"></div>
 
   <!-- ダウンロード済みリスト -->
-  <h2>再生リスト</h2>
-  <div id="trackList"></div>
+  <div id="playlist" class="playlist-controls">
+    <h2>再生リスト</h2>
+    <button id="playAllBtn" class="playbtn"><img src="icons/play.svg" class="icon" alt="">再生</button>
+    <button id="shuffleAllBtn" class="shuffleBtn"><img src="icons/shuffle.svg" class="icon" alt="">シャッフル</button>
+    <div id="trackList"></div>
+  </div>
 
 <!-- ==========================
      下部固定ミニプレイヤー
@@ -32,11 +36,15 @@
       <span id="mini-title" class="mini-title">再生中なし</span>
       <span id="mini-artist" class="mini-artist"></span>
     </div>
+<div class="mini-player">
+  <img src="cover.jpg" class="mini-cover">
 
-    <div class="mini-controls">
-      <button id="mini-playbtn" class="mini-playbtn">▶</button>
-      <button id="mini-repeat-btn" class="mini-repeat-btn">🔁</button>
-    </div>
+  <div class="mini-title">曲名がここに入るよ</div>
+
+  <div class="mini-controls">
+    <img src="icons/pause.svg" class="icon" id="miniPlay">
+    <img src="icons/next.svg" class="icon" id="miniNext">
+    <img src="icons/repeat.svg" class="icon" id="miniRepeat">
   </div>
 
   <div class="mini-progress">
