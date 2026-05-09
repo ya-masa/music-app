@@ -511,15 +511,15 @@ let repeatMode = "off"; // off / all / one
 document.getElementById("miniRepeat").onclick = () => {
   if (repeatMode === "off") {
     repeatMode = "all";
-    miniRepeat.src = "icons/repeat.svg";
+    miniRepeat.src = "./assets/icons/repeat.svg";
     miniRepeat.classList.add("playing");   // ON → 薄い赤
   } else if (repeatMode === "all") {
     repeatMode = "one";
-    miniRepeat.src = "icons/repeat-one.svg";
+    miniRepeat.src = "./assets/icons/repeat-one.svg";
     miniRepeat.classList.add("playing");   // ON → 薄い赤
   } else {
     repeatMode = "off";
-    miniRepeat.src = "icons/repeat.svg"; // グレー版にしてもOK
+    miniRepeat.src = "./assets/icons/repeat.svg"; // グレー版にしてもOK
     miniRepeat.classList.remove("playing"); // OFF → 黒
 
   }
