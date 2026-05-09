@@ -321,7 +321,7 @@ async function addSingleSong(item) {
    再生リスト表示
 ========================== */
 function renderSelectedList() {
-  const container = document.getElementById("trackList");
+  const container = document.getElementById("mini-player");
   container.innerHTML = "";
 
   selectedSongs.forEach((song, index) => {
@@ -330,7 +330,7 @@ function renderSelectedList() {
 
     const cover = document.createElement("img");
     cover.className = "song-cover";
-    cover.src = "assets/images/music-note.png";
+    cover.src = "./assets/images/music-note.png";
 
     const info = document.createElement("div");
     info.className = "song-info";
