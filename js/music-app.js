@@ -115,7 +115,7 @@ async function showFolderChildren(folderId, parentName) {
   backBtn.className = "save-btn";
   backBtn.onclick = async () => {
     const rootFolders = await listRootFolders();
-    renderRootFolderList(rootFolders);
+    listRootFolders();
   };
   container.appendChild(backBtn);
 
@@ -224,6 +224,28 @@ async function getDownloadUrl(id) {
   );
   const data = await urlRes.json();
   return data["@microsoft.graph.downloadUrl"];
+}
+
+/* ==========================
+   再帰的に曲を取得
+========================== */
+async function getFilesRecursively(folderId) {
+  const url = `https://graph.microsoft.com/v1.0/me/drive/items/${folderId}/children`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const data = await res.json();
+
+  let songs = [];
+
+  for (const item of data.value) {
+    if (item.folder) {
+      const sub = await getFilesRecursively(item.id);
+      songs = songs.concat(sub);
+    } else if (item.name.match(/\.(mp3|wav|m4a)$/i)) {
+      songs.push(item);
+    }
+  }
+
+  return songs;
 }
 
 
@@ -342,9 +364,6 @@ async function playFromList(index) {
   audio.play();
 
   updateMiniPlayer(song);
-
-  document.getElementById("nowPlaying").textContent =
-    `▶ 再生中: ${song.name}`;
 }
 
 /* ==========================
