@@ -526,13 +526,25 @@ document.getElementById("miniRepeat").onclick = () => {
   }
 };
 
-function updateMiniPlayerState(isPlaying) {
-  const playIcon = document.getElementById("miniPlay");
+function updateMiniPlayer(song) {
+  document.getElementById("mini-cover").src = "./assets/images/music-note.png";
+  document.getElementById("mini-title").textContent = song.name;
+  document.getElementById("mini-artist").textContent = `${song.artist} / ${song.album}`;
 
-  if (isPlaying) {
-    playIcon.classList.add("playing");
-  } else {
-    playIcon.classList.remove("playing");
-  }
+  const btn = document.getElementById("mini-playbtn");
+
+  btn.textContent = "⏸";
+  btn.classList.add("playing");   // ON → 薄い赤
+
+  btn.onclick = () => {
+    if (btn.textContent === "⏸") {
+      btn.classList.remove("playing");
+      btn.textContent = "▶";
+    } else {
+      btn.classList.add("playing");
+      btn.textContent = "⏸";
+    }
+  };
 }
+
 
