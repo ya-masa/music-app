@@ -494,31 +494,31 @@ async function playSong(song) {
   updateMiniPlayer(song);
 }
 
-
+songs
 
 /* ==========================
    再生ALLボタン押下時の処理
 ========================== */
 document.getElementById("playAllBtn").onclick = () => {
-  if (songs.length === 0) return;
+  if (selectedSongs.length === 0) return;
   currentIndex = 0;
-  playSong(songs[0]);
+  playSong(selectedSongs[0]);
 };
 /* ==========================
    シャッフルALLボタン押下時の処理
 ========================== */
 document.getElementById("shuffleAllBtn").onclick = () => {
-  if (songs.length === 0) return;
-  currentIndex = Math.floor(Math.random() * songs.length);
-  playSong(songs[currentIndex]);
+  if (selectedSongs.length === 0) return;
+  currentIndex = Math.floor(Math.random() * selectedSongs.length);
+  playSong(selectedSongs[currentIndex]);
 };
 
 /* ==========================
    ネクストボタン押下時の処理
 ========================== */
 document.getElementById("miniNext").onclick = () => {
-  currentIndex = (currentIndex + 1) % songs.length;
-  playSong(songs[currentIndex]);
+  currentIndex = (currentIndex + 1) % selectedSongs.length;
+  playSong(selectedSongs[currentIndex]);
 };
 let repeatMode = "off"; // off / all / one
 
