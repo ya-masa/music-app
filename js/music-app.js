@@ -469,8 +469,8 @@ async function playSong(song) {
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.src = "";
-    currentAudio.remove(); // ← イベントリスナーも消える
   }
+
   let url = song.cachedUrl;
 
   if (!url) {
@@ -484,15 +484,28 @@ async function playSong(song) {
 
   currentAudio = new Audio(url);
 
-  /* 🔥 ここで timeupdate を currentAudio に付ける */
+  // 🔥 再生中の曲の timeupdate（プリフェッチ用）
   currentAudio.addEventListener("timeupdate", () => {
-    if (currentAudio.duration - currentAudio.currentTime < 5) {
+    if (currentAudio.duration - currentAudio.currentTime < 10) {
       prefetchNextSong();
     }
   });
 
+  // 🔥 曲が終わったら次の曲へ
+  currentAudio.addEventListener("ended", () => {
+    playNextSong();
+  });
+
   currentAudio.play();
   updateMiniPlayer(song);
+}
+/* ==========================
+   次の曲再生
+========================== */
+function playNextSong() {
+  currentIndex = (currentIndex + 1) % selectedSongs.length;
+  const nextSong = selectedSongs[currentIndex];
+  playSong(nextSong);
 }
 
 
