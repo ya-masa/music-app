@@ -435,15 +435,6 @@ function playFromList(index) {
 
 
 /* ==========================
-   曲終了時の処理プリフェッチ
-========================== */
-audio.addEventListener("timeupdate", () => {
-  if (audio.duration - audio.currentTime < 10) {
-    prefetchNextSong();
-  }
-});
-
-/* ==========================
    次の曲準備
 ========================== */
 async function prefetchNextSong() {
@@ -475,8 +466,11 @@ async function prefetchNextSong() {
    曲再生するところ
 ========================== */
 async function playSong(song) {
-  if (currentAudio) currentAudio.pause();
-
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = "";
+    currentAudio.remove(); // ← イベントリスナーも消える
+  }
   let url = song.cachedUrl;
 
   if (!url) {
@@ -489,10 +483,18 @@ async function playSong(song) {
   }
 
   currentAudio = new Audio(url);
-  currentAudio.play();
 
+  /* 🔥 ここで timeupdate を currentAudio に付ける */
+  currentAudio.addEventListener("timeupdate", () => {
+    if (currentAudio.duration - currentAudio.currentTime < 5) {
+      prefetchNextSong();
+    }
+  });
+
+  currentAudio.play();
   updateMiniPlayer(song);
 }
+
 
 
 /* ==========================
@@ -519,11 +521,13 @@ document.getElementById("miniNext").onclick = () => {
   currentIndex = (currentIndex + 1) % selectedSongs.length;
   playSong(selectedSongs[currentIndex]);
 };
-let repeatMode = "off"; // off / all / one
+
 
 /* ==========================
    リピート・リピートoneボタン押下時の処理
 ========================== */
+let repeatMode = "off"; // off / all / one
+
 document.getElementById("miniRepeat").onclick = () => {
   if (repeatMode === "off") {
     repeatMode = "all";
@@ -541,6 +545,9 @@ document.getElementById("miniRepeat").onclick = () => {
   }
 };
 
+/* ==========================
+   プレーヤー表示の更新
+========================== */
 function updateMiniPlayer(song) {
   document.getElementById("mini-cover").src = "./assets/images/music-note.png";
   document.getElementById("mini-title").textContent = song.name;
@@ -548,18 +555,26 @@ function updateMiniPlayer(song) {
 
   const btn = document.getElementById("miniPlay");
 
+  // 初期状態は「再生中」
   btn.textContent = "⏸";
-  btn.classList.add("playing");   // ON → 薄い赤
+  btn.classList.add("playing");
 
   btn.onclick = () => {
-    if (btn.textContent === "⏸") {
-      btn.classList.remove("playing");
-      btn.textContent = "▶";
-    } else {
-      btn.classList.add("playing");
+    if (!currentAudio) return;
+
+    if (currentAudio.paused) {
+      // ▶ → 再生
+      currentAudio.play();
       btn.textContent = "⏸";
+      btn.classList.add("playing");
+    } else {
+      // ⏸ → 停止
+      currentAudio.pause();
+      btn.textContent = "▶";
+      btn.classList.remove("playing");
     }
   };
 }
+
 
 
