@@ -363,9 +363,6 @@ function renderSelectedList() {
 
     item.onclick = () => playFromList(index);
 
-    container.appendChild(item);
-
-
     // ==========================
     // スワイプ削除カード（song-card）
     // ==========================
@@ -379,39 +376,39 @@ function renderSelectedList() {
       renderSelectedList();
     };
 
-    card.appendChild(del);
+    item.appendChild(del);
 
     // --- スワイプ処理 ---
     let startX = 0;
     let swiped = false;
 
-    card.addEventListener("touchstart", (e) => {
+    item.addEventListener("touchstart", (e) => {
       startX = e.touches[0].clientX;
     });
 
-    card.addEventListener("touchmove", (e) => {
+    item.addEventListener("touchmove", (e) => {
       const diff = e.touches[0].clientX - startX;
 
       if (diff < -20) {
-        card.style.transform = "translateX(-80px)";
+        item.style.transform = "translateX(-80px)";
         del.style.transform = "translateX(0)";
         swiped = true;
       }
       if (diff > 20 && swiped) {
-        card.style.transform = "translateX(0)";
+        item.style.transform = "translateX(0)";
         del.style.transform = "translateX(100%)";
         swiped = false;
       }
     });
 
-    card.onclick = () => {
+    item.onclick = () => {
       if (swiped) return;
       playSong(song);
       currentPlayingId = song.id;
       renderSelectedList();
     };
 
-    container.appendChild(card);
+    container.appendChild(item);
   });
 }
 
