@@ -321,7 +321,7 @@ async function addSingleSong(item) {
    再生リスト表示
 ========================== */
 function renderSelectedList() {
-  const container = document.getElementById("mini-player");
+  const container = document.getElementById("trackList");
   container.innerHTML = "";
 
   selectedSongs.forEach((song, index) => {
