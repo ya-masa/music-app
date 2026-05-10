@@ -408,7 +408,7 @@ function renderSelectedList() {
     // ==========================
     // 再生（onclick は1つだけ）
     // ==========================
-    item.onclick = () => {
+    row.onclick = () => {
       if (swiped) return;  // スワイプ中は再生しない
       playFromList(index); // ← 正しい
     };
