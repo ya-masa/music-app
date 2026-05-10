@@ -424,7 +424,7 @@ async function playFromList(index) {
   if (!url) {
     alert("URL取得失敗: " + song.name);
     loginBtn.onclick();
-    playFromList(index);
+    playSong(index);
     return;
   }
 
@@ -443,16 +443,57 @@ audio.addEventListener("timeupdate", () => {
   }
 });
 
-function prefetchNextSong() {
-  const nextIndex = (currentIndex + 1) % songs.length;
-  const nextSong = songs[nextIndex];
+/* ==========================
+   次の曲準備
+========================== */
+async function prefetchNextSong() {
+  const nextIndex = (currentIndex + 1) % selectedSongs.length;
+  const nextSong = selectedSongs[nextIndex];
 
-  if (!nextSong.prefetched) {
-    fetch(nextSong.url).then(res => {
-      nextSong.prefetched = true;
-    });
+  if (nextSong.prefetched) return;
+
+  // 次の曲の downloadUrl を先に取得
+  const urlRes = await fetch(
+    `https://graph.microsoft.com/v1.0/me/drive/items/${nextSong.id}?select=@microsoft.graph.downloadUrl`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  const data = await urlRes.json();
+  const url = data["@microsoft.graph.downloadUrl"];
+
+  if (url) {
+    // 先読み用にキャッシュしておく
+    nextSong.prefetched = true;
+    nextSong.cachedUrl = url;
+
+    // 実際に軽く fetch してキャッシュを温める
+    fetch(url);
   }
 }
+
+/* ==========================
+   曲再生するところ
+========================== */
+async function playSong(song) {
+  if (currentAudio) currentAudio.pause();
+
+  let url = song.cachedUrl;
+
+  if (!url) {
+    const urlRes = await fetch(
+      `https://graph.microsoft.com/v1.0/me/drive/items/${song.id}?select=@microsoft.graph.downloadUrl`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const data = await urlRes.json();
+    url = data["@microsoft.graph.downloadUrl"];
+  }
+
+  currentAudio = new Audio(url);
+  currentAudio.play();
+
+  updateMiniPlayer(song);
+}
+
 
 
 /* ==========================
@@ -506,7 +547,7 @@ function updateMiniPlayer(song) {
   document.getElementById("mini-title").textContent = song.name;
   document.getElementById("mini-artist").textContent = `${song.artist} / ${song.album}`;
 
-  const btn = document.getElementById("mini-playbtn");
+  const btn = document.getElementById("miniPlay");
 
   btn.textContent = "⏸";
   btn.classList.add("playing");   // ON → 薄い赤
