@@ -372,7 +372,15 @@ function renderSelectedList() {
 
     del.onclick = (e) => {
       e.stopPropagation();
-      selectedSongs.splice(index, 1);  // ← これが正しい
+
+      selectedSongs.splice(index, 1);
+
+      // 再生中の曲が削除されたら currentIndex を調整
+      if (currentIndex >= selectedSongs.length) {
+        currentIndex = selectedSongs.length - 1;
+      }
+      if (currentIndex < 0) currentIndex = 0;
+
       renderSelectedList();
     };
 
@@ -415,28 +423,15 @@ function renderSelectedList() {
 /* ==========================
    ID で再生する
 ========================== */
-async function playFromList(index) {
-  // 曲が存在しない場合は何もしない
-  if (!selectedSongs || selectedSongs.length === 0) return;
+function playFromList(index) {
   if (!selectedSongs[index]) return;
 
   currentIndex = index;
   const song = selectedSongs[currentIndex];
 
-  const url = await getDownloadUrl(song.id);
-
-  if (!url) {
-    alert("URL取得失敗: " + song.name);
-    loginBtn.onclick();
-    playSong(index);
-    return;
-  }
-
-  audio.src = url;
-  audio.play();
-
-  updateMiniPlayer(song);
+  playSong(song);
 }
+
 
 /* ==========================
    曲終了時の処理プリフェッチ
