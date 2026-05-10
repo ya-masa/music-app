@@ -222,17 +222,13 @@ function renderSongCard(container, item) {
   info.appendChild(title);
   info.appendChild(artist);
 
-  const addBtn = document.createElement("button");
-  addBtn.className = "save-btn";
-  addBtn.textContent = "追加";
-  addBtn.onclick = (e) => {
+  card.onclick = (e) => {
     e.stopPropagation();
     addSingleSong(item);
   };
 
   card.appendChild(cover);
   card.appendChild(info);
-  card.appendChild(addBtn);
 
   container.appendChild(card);
 }
@@ -303,7 +299,7 @@ async function loadMusicFromFolder(folderId, albumName) {
 ========================== */
 async function addSingleSong(item) {
   const albumName = item.parentReference?.name || "Unknown Album";
-  const artistName = currentFolderParentName || "Unknown Artist";
+  const artistName = getArtistNameFromItem(item) || "Unknown Artist";
 
   selectedSongs.push({
     id: item.id,
@@ -315,6 +311,18 @@ async function addSingleSong(item) {
 
   renderSelectedList();
 }
+/* ==========================
+   歌手名を２個上のフォルダ名から取得
+========================== */
+function getArtistNameFromItem(item) {
+  const path = item.parentReference?.path; 
+  if (!path) return "Unknown Artist";
+
+  const parts = path.split("/");
+  // 最後の要素は "アルバム名"
+  // その1つ前が "アーティスト名"
+  return parts[parts.length - 2] || "Unknown Artist";
+}
 
 
 /* ==========================
@@ -325,6 +333,10 @@ function renderSelectedList() {
   container.innerHTML = "";
 
   selectedSongs.forEach((song, index) => {
+
+    // ==========================
+    // 曲カード（song-item）
+    // ==========================
     const item = document.createElement("div");
     item.className = "song-item";
 
@@ -346,76 +358,71 @@ function renderSelectedList() {
     info.appendChild(titleEl);
     info.appendChild(artistEl);
 
-    item.onclick = (e) => {
-      e.stopPropagation();
-      playFromList(index);
-    };
-
     item.appendChild(cover);
     item.appendChild(info);
 
+    item.onclick = () => playFromList(index);
+
     container.appendChild(item);
-      /* ==========================
-      曲カードをスワイプすると削除ボタンが出てくる
-      ========================== */
-      const card = document.createElement("div");
-      card.className = "song-card";
 
-      const title = document.createElement("div");
-      title.className = "song-title";
-      title.textContent = song.name;
 
-      const del = document.createElement("div");
-      del.className = "song-delete-swipe";
-      del.textContent = "🗑️";
+    // ==========================
+    // スワイプ削除カード（song-card）
+    // ==========================
+    const card = document.createElement("div");
+    card.className = "song-card";
 
-      del.onclick = (e) => {
-        e.stopPropagation();
-        songs.splice(index, 1);
-        renderFolderLists();
-      };
+    const title = document.createElement("div");
+    title.className = "song-title";
+    title.textContent = song.name;
 
-      card.appendChild(title);
-      card.appendChild(del);
+    const del = document.createElement("div");
+    del.className = "song-delete-swipe";
+    del.textContent = "🗑️";
 
-      // --- スワイプ処理 ---
-      let startX = 0;
-      let currentX = 0;
-      let swiped = false;
+    del.onclick = (e) => {
+      e.stopPropagation();
+      selectedSongs.splice(index, 1);  // ← これが正しい
+      renderSelectedList();
+    };
 
-      card.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
-      });
+    card.appendChild(title);
+    card.appendChild(del);
 
-      card.addEventListener("touchmove", (e) => {
-        currentX = e.touches[0].clientX;
-        const diff = currentX - startX;
+    // --- スワイプ処理 ---
+    let startX = 0;
+    let swiped = false;
 
-        if (diff < -20) {
-          // 左スワイプ
-          card.style.transform = "translateX(-80px)";
-          del.style.transform = "translateX(0)";
-          swiped = true;
-        }
-        if (diff > 20 && swiped) {
-          // 右に戻す
-          card.style.transform = "translateX(0)";
-          del.style.transform = "translateX(100%)";
-          swiped = false;
-        }
-      });
-
-      // 再生
-      card.onclick = () => {
-        if (swiped) return; // スワイプ中は再生しない
-        playSong(song);
-        currentPlayingId = song.id;
-        renderFolderLists();
-      };
-
-      container.appendChild(card);
+    card.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
     });
+
+    card.addEventListener("touchmove", (e) => {
+      const diff = e.touches[0].clientX - startX;
+
+      if (diff < -20) {
+        card.style.transform = "translateX(-80px)";
+        del.style.transform = "translateX(0)";
+        swiped = true;
+      }
+      if (diff > 20 && swiped) {
+        card.style.transform = "translateX(0)";
+        del.style.transform = "translateX(100%)";
+        swiped = false;
+      }
+    });
+
+    card.onclick = () => {
+      if (swiped) return;
+      playSong(song);
+      currentPlayingId = song.id;
+      renderSelectedList();
+    };
+
+    container.appendChild(card);
+  });
 }
+
 /* ==========================
    ID で再生する
 ========================== */
