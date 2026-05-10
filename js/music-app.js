@@ -353,8 +353,6 @@ function renderSelectedList() {
 
     item.appendChild(cover);
     item.appendChild(info);
-    item.appendChild(playALLBtn);
-    item.appendChild(shuffleAllBtn);
 
     container.appendChild(item);
     /* ==========================
