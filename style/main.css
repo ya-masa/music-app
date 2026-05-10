@@ -344,6 +344,7 @@ body {
 
 @media (max-width: 600px) {
   #mini-player {
+    display: flex !important;
     height: auto !important;
     padding: 12px !important;
     flex-direction: column !important;
