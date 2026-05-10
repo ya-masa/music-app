@@ -403,7 +403,7 @@ function renderSelectedList() {
 
     item.onclick = () => {
       if (swiped) return;
-      playSong(song);
+      playFromList(song);
       currentPlayingId = song.id;
       renderSelectedList();
     };
@@ -438,7 +438,7 @@ async function playFromList(index) {
    曲終了時の処理プリフェッチ
 ========================== */
 audio.addEventListener("timeupdate", () => {
-  if (audio.duration - audio.currentTime < 5) {
+  if (audio.duration - audio.currentTime < 10) {
     prefetchNextSong();
   }
 });
