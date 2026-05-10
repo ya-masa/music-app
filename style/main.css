@@ -342,6 +342,37 @@ body {
 }
 
 
+@media (max-width: 480px) {
+  #mini-player {
+    height: auto; /* 中身に合わせて伸びる */
+    padding: 12px;
+    flex-direction: column; /* ← 縦並びにする */
+    gap: 12px;
+  }
+
+  .mini-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .mini-controls {
+    display: flex;
+    justify-content: center;
+    gap: 32px; /* ボタン間を広く */
+    width: 100%;
+  }
+
+  .mini-controls .icon {
+    width: 36px;  /* ← スマホは大きめ */
+    height: 36px;
+  }
+
+  .mini-progress {
+    width: 100%;
+  }
+}
+
+
 /* ==========================
    曲名スクロール
 ========================== */
