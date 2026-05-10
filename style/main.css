@@ -96,7 +96,7 @@ body {
 /* ==========================
    曲リスト
 ========================== */
-.song-list {
+#truckList {
   display: flex;
   flex-direction: column;
   gap: 10px;
