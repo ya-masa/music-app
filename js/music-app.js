@@ -337,7 +337,7 @@ function renderSelectedList() {
 
 // ラッパー（スワイプ対象）
     const row = document.createElement("div");
-    row.className = "card";
+    row.className = "song-item";
 
     // 曲情報
     const cover = document.createElement("img");
