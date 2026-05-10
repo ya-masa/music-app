@@ -334,13 +334,17 @@ function renderSelectedList() {
 
   selectedSongs.forEach((song, index) => {
 
-    // ラッパー（スワイプ対象）
+// ラッパー（スワイプ対象）
     const row = document.createElement("div");
-    row.className = "song-row";
+    row.className = "card";
 
     // 曲情報
-    const main = document.createElement("div");
-    main.className = "song-main";
+    const cover = document.createElement("img");
+    cover.className = "song-cover";
+    cover.src = "./assets/images/music-note.png";
+
+    const info = document.createElement("div");
+    info.className = "song-info";
 
     const title = document.createElement("div");
     title.className = "song-title";
@@ -350,48 +354,64 @@ function renderSelectedList() {
     artist.className = "song-artist";
     artist.textContent = `${song.artist} / ${song.album}`;
 
-    main.appendChild(title);
-    main.appendChild(artist);
+    info.appendChild(title);
+    info.appendChild(artist);
 
+    // ==========================
     // 削除ボタン
+    // ==========================
     const del = document.createElement("div");
-    del.className = "song-delete";
+    del.className = "song-delete-swipe";
     del.textContent = "🗑️";
 
     del.onclick = (e) => {
       e.stopPropagation();
+
       selectedSongs.splice(index, 1);
+
+      if (currentIndex >= selectedSongs.length) {
+        currentIndex = selectedSongs.length - 1;
+      }
+      if (currentIndex < 0) currentIndex = 0;
+
       renderSelectedList();
     };
 
+    // ==========================
     // スワイプ処理
+    // ==========================
     let startX = 0;
     let swiped = false;
 
-    row.addEventListener("touchstart", (e) => {
+    item.addEventListener("touchstart", (e) => {
       startX = e.touches[0].clientX;
     });
 
-    row.addEventListener("touchmove", (e) => {
+    item.addEventListener("touchmove", (e) => {
       const diff = e.touches[0].clientX - startX;
 
       if (diff < -20) {
-        row.style.transform = "translateX(-80px)";
+        item.style.transform = "translateX(-80px)";
+        del.style.transform = "translateX(0)";
         swiped = true;
       }
       if (diff > 20 && swiped) {
-        row.style.transform = "translateX(0)";
+        item.style.transform = "translateX(0)";
+        del.style.transform = "translateX(100%)";
         swiped = false;
       }
     });
 
-    // 再生
-    row.onclick = () => {
-      if (swiped) return;
-      playFromList(index);
+    // ==========================
+    // 再生（onclick は1つだけ）
+    // ==========================
+    item.onclick = () => {
+      if (swiped) return;  // スワイプ中は再生しない
+      playFromList(index); // ← 正しい
     };
 
-    row.appendChild(main);
+    row.appendChild(cover);
+    row.appendChild(info);
     row.appendChild(del);
     container.appendChild(row);
   });
