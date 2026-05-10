@@ -344,31 +344,33 @@ body {
 
 @media (max-width: 600px) {
   #mini-player {
-    height: auto; /* 中身に合わせて伸びる */
-    padding: 12px;
-    flex-direction: column; /* ← 縦並びにする */
-    gap: 12px;
+    height: auto !important;
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
   }
 
   .mini-row {
-    width: 100%;
-    justify-content: space-between;
+    width: 100% !important;
+    justify-content: space-between !important;
   }
 
   .mini-controls {
-    display: flex;
-    justify-content: center;
-    gap: 32px; /* ボタン間を広く */
-    width: 100%;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 40px !important;
   }
 
   .mini-controls .icon {
-    width: 36px;  /* ← スマホは大きめ */
-    height: 36px;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 8px !important; /* タップ領域拡大 */
   }
 
   .mini-progress {
-    width: 100%;
+    width: 100% !important;
   }
 }
 
