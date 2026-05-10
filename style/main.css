@@ -342,7 +342,7 @@ body {
 }
 
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   #mini-player {
     height: auto; /* 中身に合わせて伸びる */
     padding: 12px;
