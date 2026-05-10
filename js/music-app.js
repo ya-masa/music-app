@@ -57,7 +57,6 @@ async function login() {
     accessToken = tokenResponse.accessToken;
 
     loginBtn.disabled = true;
-    chooseFolderBtn.disabled = false;
 
     // ③ フォルダ一覧取得（await OK）
     const folders = await listRootFolders();
@@ -75,11 +74,16 @@ async function login() {
 
   } catch (err) {
     console.error("ログインエラー", err);
+    relogin();
   }
 }
 /* ==========================
    ③ トークン切れの際の処理
 ========================== */
+function relogin(){
+  alert("再ログインしてください");
+  loginBtn.disabled = false;
+}
 async function fetchWithAuth(url,options = {}){
   let response = await fetch(url,options);
 
@@ -460,8 +464,7 @@ async function prefetchNextSong() {
     // 実際に軽く fetch してキャッシュを温める
     fetch(url);
   }else{
-    login();//再ログイン
-    prefetchNextSong();
+    relogin();//再ログイン
   }
 }
 
@@ -484,8 +487,7 @@ async function playSong(song) {
     const data = await urlRes.json();
     url = data["@microsoft.graph.downloadUrl"];
   }else{
-    login();//再ログイン
-    playSong(song);//再チャレンジ
+    relogin();//再ログイン
   }
 
   currentAudio = new Audio(url);
@@ -526,6 +528,7 @@ document.getElementById("playAllBtn").onclick = () => {
   currentIndex = 0;
   playSong(selectedSongs[0]);
 };
+
 /* ==========================
    シャッフルALLボタン押下時の処理
 ========================== */
