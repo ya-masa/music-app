@@ -422,8 +422,6 @@ async function playFromList(index) {
 
   currentIndex = index;
   const song = selectedSongs[currentIndex];
-  currentIndex = index;
-  const song = selectedSongs[index];
 
   const url = await getDownloadUrl(song.id);
 
