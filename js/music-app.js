@@ -355,10 +355,9 @@ function renderSelectedList() {
     item.appendChild(info);
 
     container.appendChild(item);
-    /* ==========================
-    曲カードをスワイプすると削除ボタンが出てくる
-    ========================== */
-    songs.forEach((song, index) => {
+      /* ==========================
+      曲カードをスワイプすると削除ボタンが出てくる
+      ========================== */
       const card = document.createElement("div");
       card.className = "song-card";
 
@@ -376,48 +375,46 @@ function renderSelectedList() {
         renderFolderLists();
       };
 
-        card.appendChild(title);
-        card.appendChild(del);
+      card.appendChild(title);
+      card.appendChild(del);
 
-        // --- スワイプ処理 ---
-        let startX = 0;
-        let currentX = 0;
-        let swiped = false;
+      // --- スワイプ処理 ---
+      let startX = 0;
+      let currentX = 0;
+      let swiped = false;
 
-        card.addEventListener("touchstart", (e) => {
-          startX = e.touches[0].clientX;
-        });
+      card.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX;
+      });
 
-        card.addEventListener("touchmove", (e) => {
-          currentX = e.touches[0].clientX;
-          const diff = currentX - startX;
+      card.addEventListener("touchmove", (e) => {
+        currentX = e.touches[0].clientX;
+        const diff = currentX - startX;
 
-          if (diff < -20) {
-            // 左スワイプ
-            card.style.transform = "translateX(-80px)";
-            del.style.transform = "translateX(0)";
-            swiped = true;
-          }
-          if (diff > 20 && swiped) {
-            // 右に戻す
-            card.style.transform = "translateX(0)";
-            del.style.transform = "translateX(100%)";
-            swiped = false;
-          }
+        if (diff < -20) {
+          // 左スワイプ
+          card.style.transform = "translateX(-80px)";
+          del.style.transform = "translateX(0)";
+          swiped = true;
+        }
+        if (diff > 20 && swiped) {
+          // 右に戻す
+          card.style.transform = "translateX(0)";
+          del.style.transform = "translateX(100%)";
+          swiped = false;
+        }
+      });
+
+      // 再生
+      card.onclick = () => {
+        if (swiped) return; // スワイプ中は再生しない
+        playSong(song);
+        currentPlayingId = song.id;
+        renderFolderLists();
+      };
+
+      container.appendChild(card);
     });
-
-    // 再生
-    card.onclick = () => {
-      if (swiped) return; // スワイプ中は再生しない
-      playSong(song);
-      currentPlayingId = song.id;
-      renderFolderLists();
-    };
-
-    container.appendChild(card);
-  });
-
-  });
 }
 /* ==========================
    ID で再生する
