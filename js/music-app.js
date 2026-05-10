@@ -334,9 +334,6 @@ function renderSelectedList() {
 
   selectedSongs.forEach((song, index) => {
 
-    // ==========================
-    // 曲カード（song-item）
-    // ==========================
     const item = document.createElement("div");
     item.className = "song-item";
 
@@ -361,10 +358,8 @@ function renderSelectedList() {
     item.appendChild(cover);
     item.appendChild(info);
 
-    item.onclick = () => playFromList(index);
-
     // ==========================
-    // スワイプ削除カード（song-card）
+    // 削除ボタン
     // ==========================
     const del = document.createElement("div");
     del.className = "song-delete-swipe";
@@ -375,7 +370,6 @@ function renderSelectedList() {
 
       selectedSongs.splice(index, 1);
 
-      // 再生中の曲が削除されたら currentIndex を調整
       if (currentIndex >= selectedSongs.length) {
         currentIndex = selectedSongs.length - 1;
       }
@@ -386,7 +380,9 @@ function renderSelectedList() {
 
     item.appendChild(del);
 
-    // --- スワイプ処理 ---
+    // ==========================
+    // スワイプ処理
+    // ==========================
     let startX = 0;
     let swiped = false;
 
@@ -409,16 +405,18 @@ function renderSelectedList() {
       }
     });
 
+    // ==========================
+    // 再生（onclick は1つだけ）
+    // ==========================
     item.onclick = () => {
-      if (swiped) return;
-      playFromList(song);
-      currentPlayingId = song.id;
-      renderSelectedList();
+      if (swiped) return;  // スワイプ中は再生しない
+      playFromList(index); // ← 正しい
     };
 
     container.appendChild(item);
   });
 }
+
 
 /* ==========================
    ID で再生する
