@@ -494,7 +494,6 @@ async function playSong(song) {
   updateMiniPlayer(song);
 }
 
-songs
 
 /* ==========================
    再生ALLボタン押下時の処理
