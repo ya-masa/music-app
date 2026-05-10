@@ -459,6 +459,9 @@ async function prefetchNextSong() {
 
     // 実際に軽く fetch してキャッシュを温める
     fetch(url);
+  }else{
+    login();//再ログイン
+    prefetchNextSong();
   }
 }
 
@@ -480,6 +483,9 @@ async function playSong(song) {
     );
     const data = await urlRes.json();
     url = data["@microsoft.graph.downloadUrl"];
+  }else{
+    login();//再ログイン
+    playSong(song);//再チャレンジ
   }
 
   currentAudio = new Audio(url);
