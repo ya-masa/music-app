@@ -416,6 +416,12 @@ function renderSelectedList() {
    ID で再生する
 ========================== */
 async function playFromList(index) {
+  // 曲が存在しない場合は何もしない
+  if (!selectedSongs || selectedSongs.length === 0) return;
+  if (!selectedSongs[index]) return;
+
+  currentIndex = index;
+  const song = selectedSongs[currentIndex];
   currentIndex = index;
   const song = selectedSongs[index];
 
