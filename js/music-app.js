@@ -201,7 +201,7 @@ function renderFolderCard(container, item) {
 /* ==========================
    ⑦ 曲カード（CSS対応）
 ========================== */
-function renderSongCard(container, item) {
+function renderSongCard(container, song) {
   const musicCard = document.createElement("div");
   musicCard.className = "song-item";
 
@@ -214,18 +214,18 @@ function renderSongCard(container, item) {
 
   const title = document.createElement("div");
   title.className = "song-title";
-  title.textContent = item.name;
+  title.textContent = song.name;
 
   const artist = document.createElement("div");
   artist.className = "song-artist";
-  artist.textContent = currentFolderParentName || "";
+  artist.textContent = getArtistNameFromItem(song) || "";
 
   info.appendChild(title);
   info.appendChild(artist);
 
   musicCard.onclick = (e) => {
     e.stopPropagation();
-    addSingleSong(item);
+    addSingleSong(song);
   };
 
   musicCard.appendChild(cover);
