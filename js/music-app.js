@@ -298,14 +298,14 @@ async function loadMusicFromFolder(folderId, albumName) {
 /* ==========================
    単曲追加
 ========================== */
-async function addSingleSong(item) {
-  const albumName = item.parentReference?.name || "Unknown Album";
-  const artistName = getArtistNameFromItem(item) || "Unknown Artist";
+async function addSingleSong(song) {
+  const albumName = song.parentReference?.name || "Unknown Album";
+  const artistName = getArtistNameFromItem(song) || "Unknown Artist";
 
   selectedSongs.push({
-    id: item.id,
+    id: song.id,
     folderId: currentFolderId,
-    name: item.name,
+    name: song.name,
     artist: artistName,
     album: albumName
   });
@@ -394,12 +394,12 @@ function renderSelectedList() {
       const diff = e.touches[0].clientX - startX;
 
       if (diff < -20) {
-        item.style.transform = "translateX(-80px)";
+        row.style.transform = "translateX(-80px)";
         del.style.transform = "translateX(0)";
         swiped = true;
       }
       if (diff > 20 && swiped) {
-        item.style.transform = "translateX(0)";
+        row.style.transform = "translateX(0)";
         del.style.transform = "translateX(100%)";
         swiped = false;
       }
