@@ -43,6 +43,8 @@ body {
   font-weight: bold;
 }
 
+
+
 /* ==========================
    再生・シャッフルボタン
 ========================== */
@@ -96,7 +98,7 @@ body {
 /* ==========================
    曲リスト
 ========================== */
-#truckList {
+#truckList,#playList {
   display: flex;
   flex-direction: column;
   gap: 10px;
