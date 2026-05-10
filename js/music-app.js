@@ -384,11 +384,13 @@ function renderSelectedList() {
     let startX = 0;
     let swiped = false;
 
-    item.addEventListener("touchstart", (e) => {
+    row.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
       startX = e.touches[0].clientX;
     });
 
-    item.addEventListener("touchmove", (e) => {
+    row.addEventListener("touchmove", (e) => {
+      e.stopPropagation();
       const diff = e.touches[0].clientX - startX;
 
       if (diff < -20) {
