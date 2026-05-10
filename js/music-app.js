@@ -334,86 +334,66 @@ function renderSelectedList() {
 
   selectedSongs.forEach((song, index) => {
 
-    const item = document.createElement("div");
-    item.className = "song-item";
+    // ラッパー（スワイプ対象）
+    const row = document.createElement("div");
+    row.className = "song-row";
 
-    const cover = document.createElement("img");
-    cover.className = "song-cover";
-    cover.src = "./assets/images/music-note.png";
+    // 曲情報
+    const main = document.createElement("div");
+    main.className = "song-main";
 
-    const info = document.createElement("div");
-    info.className = "song-info";
+    const title = document.createElement("div");
+    title.className = "song-title";
+    title.textContent = song.name;
 
-    const titleEl = document.createElement("div");
-    titleEl.className = "song-title";
-    titleEl.textContent = song.name;
+    const artist = document.createElement("div");
+    artist.className = "song-artist";
+    artist.textContent = `${song.artist} / ${song.album}`;
 
-    const artistEl = document.createElement("div");
-    artistEl.className = "song-artist";
-    artistEl.textContent = `${song.artist} / ${song.album}`;
+    main.appendChild(title);
+    main.appendChild(artist);
 
-    info.appendChild(titleEl);
-    info.appendChild(artistEl);
-
-    item.appendChild(cover);
-    item.appendChild(info);
-
-    // ==========================
     // 削除ボタン
-    // ==========================
     const del = document.createElement("div");
-    del.className = "song-delete-swipe";
+    del.className = "song-delete";
     del.textContent = "🗑️";
 
     del.onclick = (e) => {
       e.stopPropagation();
-
       selectedSongs.splice(index, 1);
-
-      if (currentIndex >= selectedSongs.length) {
-        currentIndex = selectedSongs.length - 1;
-      }
-      if (currentIndex < 0) currentIndex = 0;
-
       renderSelectedList();
     };
 
-    item.appendChild(del);
-
-    // ==========================
     // スワイプ処理
-    // ==========================
     let startX = 0;
     let swiped = false;
 
-    item.addEventListener("touchstart", (e) => {
+    row.addEventListener("touchstart", (e) => {
       startX = e.touches[0].clientX;
     });
 
-    item.addEventListener("touchmove", (e) => {
+    row.addEventListener("touchmove", (e) => {
       const diff = e.touches[0].clientX - startX;
 
       if (diff < -20) {
-        item.style.transform = "translateX(-80px)";
-        del.style.transform = "translateX(0)";
+        row.style.transform = "translateX(-80px)";
         swiped = true;
       }
       if (diff > 20 && swiped) {
-        item.style.transform = "translateX(0)";
-        del.style.transform = "translateX(100%)";
+        row.style.transform = "translateX(0)";
         swiped = false;
       }
     });
 
-    // ==========================
-    // 再生（onclick は1つだけ）
-    // ==========================
-    item.onclick = () => {
-      if (swiped) return;  // スワイプ中は再生しない
-      playFromList(index); // ← 正しい
+    // 再生
+    row.onclick = () => {
+      if (swiped) return;
+      playFromList(index);
     };
 
-    container.appendChild(item);
+    row.appendChild(main);
+    row.appendChild(del);
+    container.appendChild(row);
   });
 }
 
