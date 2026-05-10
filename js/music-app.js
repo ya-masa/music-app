@@ -174,8 +174,8 @@ async function showFolderChildren(folderId, parentName) {
    ⑦ フォルダカード（CSS対応）
 ========================== */
 function renderFolderCard(container, item) {
-  const card = document.createElement("div");
-  card.className = "song-item";
+  const folderCard = document.createElement("div");
+  folderCard.className = "song-item";
 
   const cover = document.createElement("img");
   cover.className = "song-cover";
@@ -190,19 +190,20 @@ function renderFolderCard(container, item) {
 
   info.appendChild(title);
 
-  card.appendChild(cover);
-  card.appendChild(info);
+  folderCard.appendChild(cover);
+  folderCard.appendChild(info);
 
-  card.onclick = () => showFolderChildren(item.id, item.name);
+  folderCard.onclick = () => showFolderChildren(item.id, item.name);
 
-  container.appendChild(card);
+  container.appendChild(folderCard);
 }
+
 /* ==========================
    ⑦ 曲カード（CSS対応）
 ========================== */
 function renderSongCard(container, item) {
-  const card = document.createElement("div");
-  card.className = "song-item";
+  const musicCard = document.createElement("div");
+  musicCard.className = "song-item";
 
   const cover = document.createElement("img");
   cover.className = "song-cover";
@@ -222,15 +223,15 @@ function renderSongCard(container, item) {
   info.appendChild(title);
   info.appendChild(artist);
 
-  card.onclick = (e) => {
+  musicCard.onclick = (e) => {
     e.stopPropagation();
     addSingleSong(item);
   };
 
-  card.appendChild(cover);
-  card.appendChild(info);
+  musicCard.appendChild(cover);
+  musicCard.appendChild(info);
 
-  container.appendChild(card);
+  container.appendChild(musicCard);
 }
 
 
