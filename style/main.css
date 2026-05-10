@@ -261,7 +261,7 @@ body {
    ミニプレイヤー
 ========================== */
 #mini-player {
-  height: 52px;  
+  height: 200px;  
   background: #f0e6d8; /* ほんのりベージュ */
   border-radius: 12px; /* ← ここがポイント */
   border-top: 1px solid #ddd;
