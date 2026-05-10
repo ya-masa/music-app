@@ -492,8 +492,10 @@ async function playSong(song) {
   });
 
   // 🔥 曲が終わったら次の曲へ
-  currentAudio.addEventListener("ended", () => {
-    playNextSong();
+  currentAudio.addEventListener("timeupdate", () => {
+    if (currentAudio.duration - currentAudio.currentTime < 3) {
+      playNextSong();
+    }
   });
 
   currentAudio.play();
