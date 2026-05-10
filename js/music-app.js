@@ -369,13 +369,6 @@ function renderSelectedList() {
     // ==========================
     // スワイプ削除カード（song-card）
     // ==========================
-    const card = document.createElement("div");
-    card.className = "song-card";
-
-    const title = document.createElement("div");
-    title.className = "song-title";
-    title.textContent = song.name;
-
     const del = document.createElement("div");
     del.className = "song-delete-swipe";
     del.textContent = "🗑️";
@@ -386,7 +379,6 @@ function renderSelectedList() {
       renderSelectedList();
     };
 
-    card.appendChild(title);
     card.appendChild(del);
 
     // --- スワイプ処理 ---
