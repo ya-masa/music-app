@@ -47,12 +47,24 @@ body {
   font-weight: bold;
 }
 
-
+.btn {
+  width: 140px;
+  height: 48px;
+  border-radius: 999px;
+  border: none;
+  background: var(--icon-normal);
+  color: var(--button-bg);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  align-items: center;
+}
 
 /* ==========================
-   再生・シャッフルボタン
+   ボタン
 ========================== */
-.playlist-controls {
+
+.playlist-controls{
   display: flex;
   gap: 12px;
   margin-top: 8px;

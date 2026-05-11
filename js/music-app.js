@@ -67,11 +67,8 @@ async function login() {
     container.innerHTML = "";
 
     // ④ フォルダ一覧を表示
-    folders.value.forEach(item => {
-      if (item.folder) {
-        // フォルダカード
-        renderFolderCard(container, item);
-      }
+    folders.forEach(folder => {
+      renderFolderCard(container, folder);
     });
 
   } catch (err) {
@@ -90,8 +87,6 @@ async function fetchWithAuth(url,options = {}){
 
   if (response.status === 401){
       console.log("トークン切れ → 再ログインします");
-      alert("再ログインしてください")
-      relogin();
       await loginBtn.click();
       response =await fetch(url,options);//再試行
   }
