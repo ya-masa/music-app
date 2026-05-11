@@ -5,19 +5,23 @@
 :root{
   --base-bg: #F2F2F0;
   --card-bg: #E9E7E4;
+  --player-bg:#f0e6d8;
 
   --accent-blue: #5A6E8C;
   --accent-blue-dark: #4A5A73;
 
   --text-main: #2F2F2F;
-  --text-sub: #6A6A6A;
+  --text-sub: #484848;
 
   --icon-normal: #4A5A73;
   --icon-active: #3C4A5A;
   --button-bg: #DDE3EB;
 
+  --button-del:#e74c3c;
+  --button-del-hover:#bf4032;
+
   --border-light: #D5D5D5;
-  --shadow-soft: rgba(0,0,0,0.06);
+  --shadow-soft: #262626;
 }
 
 /* ==========================
@@ -59,8 +63,8 @@ body {
   height: 48px;
   border-radius: 999px;
   border: none;
-  background: #4a90e2;
-  color: white;
+  background: var(--icon-normal);
+  color: var(--button-bg);
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
@@ -113,8 +117,8 @@ body {
   top: 0;
   width: 80px;
   height: 100%;
-  background: #e74c3c;
-  color:white;
+  background: var(--button-del);
+  color:var(--button-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,7 +130,7 @@ body {
   margin-left: auto;
   font-size: 22px;
   padding: 10px;
-  color: #777;
+  color: var(--button-bg);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -134,7 +138,7 @@ body {
 }
 
 .song-delete:hover {
-  color: #e74c3c;
+  color: var(--button-del-hover);
 }
 
 .song-item {
@@ -150,7 +154,7 @@ body {
 }
 
 .song-item:active {
-  background: rgba(0,0,0,0.05);
+  background: var(--shadow-soft);
 }
 
 .song-cover {
@@ -178,30 +182,12 @@ body {
 
 .song-artist {
   font-size: 14px;
-  color: #666;
+  color: var(--text-sub);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 保存・削除ボタン */
-.save-btn, .delete-btn {
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.save-btn {
-  background: #d0e8ff;
-  color: #004a88;
-}
-
-.delete-btn {
-  background: #ffe0e0;
-  color: #aa0000;
-}
 
 @media (max-width: 600px) {
   .song-card {
@@ -252,7 +238,7 @@ body {
 
 .np-artist {
   font-size: 14px;
-  color: #666;
+  color: var(--text-sub);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -262,9 +248,9 @@ body {
 ========================== */
 #mini-player {
   height: 200px;  
-  background: #f0e6d8; /* ほんのりベージュ */
+  background: var(--player-bg); /* ほんのりベージュ */
   border-radius: 12px; /* ← ここがポイント */
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -313,18 +299,17 @@ body {
 
 .mini-artist {
   font-size: 14px;
-  color: #666;
+  color: var(--text-sub);
   font-weight: 400; /* ← 標準 */
 }
 
 .mini-title {
   flex: 1;
   font-size: 14px;
-  color: #333;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #5a4633; /* ← 優しい濃いブラウン */
   font-weight: 400; /* ← 標準 */
 }
 
@@ -399,7 +384,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255,255,255,0.8);
+  background: var(--base-bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -410,8 +395,8 @@ body {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #ccc;
-  border-top-color: #4a90e2;
+  border: 4px solid var(--card-bg);
+  border-top-color: var(--icon-active);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

@@ -39,8 +39,10 @@ let isRepeating = false;  // 1曲リピート
 /* ==========================
    ③ ログイン
 ========================== */
+//クリック時のアクション↓
 loginBtn.onclick = () => login();
 
+//ログイン時の呼び出し関数
 async function login() {
   alert("Microsoft のログイン画面に移動します");
 
@@ -65,11 +67,11 @@ async function login() {
     container.innerHTML = "";
 
     // ④ フォルダ一覧を表示
-    folders.forEach(folder => {
-      const div = document.createElement("div");
-      div.textContent = folder.name;
-      div.onclick = () => showFolderChildren(folder.id, folder.name);
-      container.appendChild(div);
+    folders.value.forEach(item => {
+      if (item.folder) {
+        // フォルダカード
+        renderFolderCard(container, item);
+      }
     });
 
   } catch (err) {
@@ -81,7 +83,6 @@ async function login() {
    ③ トークン切れの際の処理
 ========================== */
 function relogin(){
-  alert("再ログインしてください");
   loginBtn.disabled = false;
 }
 async function fetchWithAuth(url,options = {}){
@@ -89,6 +90,8 @@ async function fetchWithAuth(url,options = {}){
 
   if (response.status === 401){
       console.log("トークン切れ → 再ログインします");
+      alert("再ログインしてください")
+      relogin();
       await loginBtn.click();
       response =await fetch(url,options);//再試行
   }
@@ -108,6 +111,7 @@ async function listRootFolders() {
 
   // フォルダだけ返す
   return data.value.filter(item => item.folder);
+  
 }
 
 /* ==========================
@@ -129,7 +133,7 @@ async function showFolderChildren(folderId, parentName) {
   -------------------------- */
   const backBtn = document.createElement("button");
   backBtn.textContent = "📁 ルートフォルダを開く";
-  backBtn.className = "save-btn";
+  backBtn.className = "btn";
   backBtn.onclick = async () => {
       // ③ フォルダ一覧取得（await OK）
       const folders = await listRootFolders();
@@ -152,7 +156,7 @@ async function showFolderChildren(folderId, parentName) {
   -------------------------- */
   const decideBtn = document.createElement("button");
   decideBtn.textContent = "🎵 このフォルダに決定";
-  decideBtn.className = "save-btn";
+  decideBtn.className = "btn";
   decideBtn.style.marginLeft = "10px";
   decideBtn.onclick = () => {
     getFilesRecursively(folder.id);
@@ -486,24 +490,20 @@ async function playSong(song) {
     );
     const data = await urlRes.json();
     url = data["@microsoft.graph.downloadUrl"];
-  }else{
-    relogin();//再ログイン
   }
 
   currentAudio = new Audio(url);
 
   // 🔥 再生中の曲の timeupdate（プリフェッチ用）
   currentAudio.addEventListener("timeupdate", () => {
-    if (currentAudio.duration - currentAudio.currentTime < 10) {
+    if (currentAudio.duration - currentAudio.currentTime < 15) {
       prefetchNextSong();
     }
   });
 
   // 🔥 曲が終わったら次の曲へ
-  currentAudio.addEventListener("timeupdate", () => {
-    if (currentAudio.duration - currentAudio.currentTime < 3) {
-      playNextSong();
-    }
+  currentAudio.addEventListener("ended", () => {
+    playNextSong
   });
 
   currentAudio.play();
