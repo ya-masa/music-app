@@ -99,17 +99,6 @@ body {
   filter: invert(100%); /* 黒アイコンを白に変換 */
 }
 
-@media (max-width: 600px) {
-  .playlist-controls button img.icon {
-    width: 26px;
-    height: 26px;
-  }
-  .playlist-controls button {
-    height: 56px;
-    font-size: 20px;
-  }
-}
-
 
 
 /* ==========================
