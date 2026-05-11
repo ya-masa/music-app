@@ -116,7 +116,7 @@ body {
 /* ==========================
    曲リスト
 ========================== */
-#truckList,#playList {
+#truckList {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -126,7 +126,6 @@ body {
   transition:transform 0.2s ease;
 }
 .song-delete-swipe{
-
   position:absolute;
   right: 0;
   top: 0;
@@ -166,6 +165,7 @@ body {
   box-shadow: 0 2px 4px var(--shadow-soft);
   cursor: pointer;
   transition: background 0.2s ease;
+  margin:10px,0;
 }
 
 .song-item:active {
