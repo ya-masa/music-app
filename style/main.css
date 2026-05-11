@@ -48,7 +48,7 @@ body {
 }
 
 .btn {
-  width: 140px;
+  width: 200px;
   height: 48px;
   border-radius: 999px;
   border: none;
@@ -58,6 +58,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   align-items: center;
+  margin: 20px;
 }
 
 /* ==========================
@@ -71,7 +72,7 @@ body {
 }
 
 .playlist-controls button {
-  width: 140px;
+  width: 200px;
   height: 48px;
   border-radius: 999px;
   border: none;
@@ -84,6 +85,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px; /* ← アイコンと文字の間 */
+  margin:20px;
 }
 
 .playlist-controls button img {
@@ -124,6 +126,7 @@ body {
   transition:transform 0.2s ease;
 }
 .song-delete-swipe{
+
   position:absolute;
   right: 0;
   top: 0;
@@ -369,6 +372,10 @@ body {
 
   .mini-progress {
     width: 100% !important;
+  }
+  .icon{
+    width: 56px;
+    height:56px;
   }
 }
 

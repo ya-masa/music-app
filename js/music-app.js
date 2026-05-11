@@ -21,7 +21,6 @@ let currentFolderParentName = null;
 
 // HTML 要素
 const loginBtn = document.getElementById("loginBtn");
-const chooseFolderBtn = document.getElementById("chooseFolderBtn");
 const trackList = document.getElementById("trackList");
 
 let folderSongsMap = {};     // フォルダID → 曲配列
@@ -138,10 +137,7 @@ async function showFolderChildren(folderId, parentName) {
 
       // ④ フォルダ一覧を表示
       folders.forEach(folder => {
-        const div = document.createElement("div");
-        div.textContent = folder.name;
-        div.onclick = () => showFolderChildren(folder.id, folder.name);
-        container.appendChild(div);
+        renderFolderCard(container, folder);
       });
   };
   container.appendChild(backBtn);
