@@ -33,8 +33,7 @@ body {
   margin: 0;
   font-family: sans-serif;
   padding-bottom: 200px; /* ミニプレイヤーの高さ分 */
-  position: relative;
-  overflow: hidden;
+
 }
 
 /* ==========================
@@ -267,7 +266,7 @@ body {
   bottom: 0;
   left: 0;
   z-index: 1000;
-  flex-direction: column;
+  flex-direction: column;  
 }
 
 .mini-progress {
@@ -336,7 +335,7 @@ body {
 }
 
 /* 再生中だけ赤くする */
-.icon > .playing {
+.mini-controls>.icon >.playing {
   filter: invert(18%) sepia(93%) saturate(7480%) hue-rotate(1deg) brightness(97%) contrast(108%);
 }
 
