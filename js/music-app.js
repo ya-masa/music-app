@@ -22,6 +22,9 @@ let currentFolderParentName = null;
 // HTML 要素
 const loginBtn = document.getElementById("loginBtn");
 const trackList = document.getElementById("trackList");
+const slider = document.getElementById("mini-slider");
+const current = document.getElementById("mini-current");
+const duration = document.getElementById("mini-duration");
 
 let folderSongsMap = {};     // フォルダID → 曲配列
 let folderNameMap  = {};     // フォルダID → フォルダ名
@@ -375,7 +378,7 @@ function renderSelectedList() {
 
       renderSelectedList();
     };
-    
+
     // ==========================
     // 再生（onclick は1つだけ）
     // ==========================
@@ -591,5 +594,33 @@ function updateMiniPlayer(song) {
   };
 }
 
+  /* ==========================
+    時間を mm:ss に整形
+  ========================== */
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+  /* ==========================
+    曲の長さがわかったらスライダー最大値を設定
+  ========================== */
+  audio.addEventListener("loadedmetadata", () => {
+    slider.max = audio.duration;
+    duration.textContent = formatTime(audio.duration);
+  });
+  /* ==========================
+    再生中にスライダーを動かす
+  ========================== */
+  audio.addEventListener("timeupdate", () => {
+    slider.value = audio.currentTime;
+    current.textContent = formatTime(audio.currentTime);
+  });
+  /* ==========================
+    スライダー操作で再生位置を変更
+  ========================== */
+  slider.addEventListener("input", () => {
+    audio.currentTime = slider.value;
+  });
 
 
