@@ -338,7 +338,7 @@ function renderSelectedList() {
   selectedSongs.forEach((song, index) => {
 
 // ラッパー（スワイプ対象）
-    const row == document.createElement("div");
+    const row = document.createElement("div");
     item.className = "song-row";
 
     const item = document.createElement("div");
