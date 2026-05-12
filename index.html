@@ -30,28 +30,24 @@
      下部固定ミニプレイヤー
 ========================== -->
 <div id="mini-player">
+  <div class="mini-progress">
+    <span id="mini-current">0:00</span>
+    <input id="mini-slider" class="mini-slider" type="range" min="0" max="100" value="0">
+    <span id="mini-duration">0:00</span>
+  </div>
   <div class="mini-row">
     <img id="mini-cover" class="mini-cover" src="./assets/images/music-note.png">
-
     <div class="mini-info">
       <span id="mini-title" class="mini-title">再生中なし</span>
       <span id="mini-artist" class="mini-artist"></span>
     </div>
-
     <div class="mini-controls">
       <img src="./assets/icons/play.svg" class="icon" id="miniPlay">
       <img src="./assets/icons/next.svg" class="icon" id="miniNext">
       <img src="./assets/icons/repeat.svg" class="icon" id="miniRepeat">
     </div>
   </div> <!-- ← これが抜けてた！ -->
-
-  <div class="mini-progress">
-    <span id="mini-current">0:00</span>
-    <input id="mini-slider" class="mini-slider" type="range" min="0" max="100" value="0">
-    <span id="mini-duration">0:00</span>
-  </div>
 </div>
-
 
 <script src="https://alcdn.msauth.net/browser/2.32.2/js/msal-browser.min.js"></script>
 <script type="module" src="js/music-app.js"></script>

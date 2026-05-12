@@ -32,7 +32,7 @@ body {
   color: var(--text-main);
   margin: 0;
   font-family: sans-serif;
-  padding-bottom: 80px; /* ミニプレイヤーの高さ分 */
+  padding-bottom: 200px; /* ミニプレイヤーの高さ分 */
 }
 
 /* ==========================
@@ -286,13 +286,14 @@ body {
 
 .mini-cover {
   width: 56px;
-  height: 40px;
+  height: 56px;
   border-radius: 6px;
   object-fit: cover;
+  margin-right:auto;
 }
 
 .mini-info {
-  flex: 1;
+  flex: flex;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -307,7 +308,6 @@ body {
 }
 
 .mini-title {
-  flex: 1;
   font-size: 14px;
   color: var(--text-main);
   white-space: nowrap;
@@ -315,58 +315,21 @@ body {
   text-overflow: ellipsis;
   font-weight: 400; /* ← 標準 */
 }
+.mini-controls {
+  margin-left:auto;/*右寄せしたい*/
 
-.mini-controls .icon {
-  width: 24px;
-  height: 24px;
+}
+.mini-controls >.icon {
+  width: 56px;
+  height: 56px;
   cursor: pointer;
-  
   transition: filter 0.2s ease;
 }
 
 /* 再生中だけ赤くする */
-.icon.playing {
+.icon .playing {
   filter: invert(18%) sepia(93%) saturate(7480%) hue-rotate(1deg) brightness(97%) contrast(108%);
 }
-
-
-@media (max-width: 600px) {
-  #mini-player {
-    display: flex !important;
-    height: auto !important;
-    padding: 12px !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 16px !important;
-  }
-
-  .mini-row {
-    width: 100% !important;
-    justify-content: space-between !important;
-  }
-
-  .mini-controls {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: center !important;
-    gap: 40px !important;
-  }
-
-  .mini-controls .icon {
-    width: 150px !important;
-    height: 150px !important;
-    padding: 8px !important; /* タップ領域拡大 */
-  }
-
-  .mini-progress {
-    width: 100% !important;
-  }
-  .icon{
-    width: 56px;
-    height:56px;
-  }
-}
-
 
 /* ==========================
    曲名スクロール
