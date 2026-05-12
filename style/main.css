@@ -60,7 +60,6 @@ body {
   align-items: center;
   margin: 20px;
 }
-
 /* ==========================
    ボタン
 ========================== */
@@ -70,7 +69,7 @@ body {
   margin-top: 8px;
 }
 
-.playlist-controls button {
+.playlist-controls >button {
   width: 200px;
   height: 48px;
   border-radius: 999px;
@@ -87,13 +86,7 @@ body {
   margin:20px;
 }
 
-.playlist-controls button img {
-  width: 20px;
-  height: 20px;
-  filter: invert(100%); /* ← 白に変換（青背景に映える） */
-}
-
-.playlist-controls button img.icon {
+.playlist-controls> button >img>.icon {
   width: 22px;
   height: 22px;
   filter: invert(100%); /* 黒アイコンを白に変換 */
@@ -264,9 +257,11 @@ body {
   bottom: 0;
   left: 0;
   z-index: 1000;
+  flex-direction: column;
 }
 
 .mini-progress {
+  width:100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -279,6 +274,7 @@ body {
 }
 
 .mini-row {
+  width:100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -320,8 +316,8 @@ body {
 
 }
 .mini-controls >.icon {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   cursor: pointer;
   transition: filter 0.2s ease;
 }

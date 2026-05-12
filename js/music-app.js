@@ -57,8 +57,6 @@ async function login() {
 
     accessToken = tokenResponse.accessToken;
 
-    loginBtn.disabled = true;
-
     // ③ フォルダ一覧取得（await OK）
     const folders = await listRootFolders();
 
@@ -86,7 +84,8 @@ async function fetchWithAuth(url,options = {}){
 
   if (response.status === 401){
       console.log("トークン切れ → 再ログインします");
-      await loginBtn.click();
+      relogin();
+      alert("再ログインしてください");
       response =await fetch(url,options);//再試行
   }
   return response;
@@ -376,6 +375,15 @@ function renderSelectedList() {
 
       renderSelectedList();
     };
+    
+    // ==========================
+    // 再生（onclick は1つだけ）
+    // ==========================
+    row.onclick = () => {
+      if (swiped) return;  // スワイプ中は再生しない
+      playFromList(index); // ← 正しい
+    };
+
 
     // ==========================
     // スワイプ処理
@@ -403,14 +411,6 @@ function renderSelectedList() {
         swiped = false;
       }
     });
-
-    // ==========================
-    // 再生（onclick は1つだけ）
-    // ==========================
-    row.onclick = () => {
-      if (swiped) return;  // スワイプ中は再生しない
-      playFromList(index); // ← 正しい
-    };
 
     row.appendChild(cover);
     row.appendChild(info);
