@@ -107,6 +107,11 @@ body {
   position: relative;
   overflow: hidden;
 }
+.song-row {
+  position: relative;
+  overflow: hidden; /* ← これが最重要 */
+  width: 100%;
+}
 .song-delete-swipe{
   position:absolute;
   right: 0;
@@ -173,7 +178,7 @@ body {
 }
 
 .song-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
   color: var(--text-main);
   white-space: nowrap;
@@ -182,7 +187,7 @@ body {
 }
 
 .song-artist {
-  font-size: 14px;
+  font-size: 18px;
   color: var(--text-sub);
   white-space: nowrap;
   overflow: hidden;
@@ -306,13 +311,13 @@ body {
 }
 
 .mini-artist {
-  font-size: 14px;
+  font-size: 20px;
   color: var(--text-sub);
   font-weight: 400; /* ← 標準 */
 }
 
 .mini-title {
-  font-size: 14px;
+  font-size: 18px;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;

@@ -337,8 +337,11 @@ function renderSelectedList() {
   selectedSongs.forEach((song, index) => {
 
 // ラッパー（スワイプ対象）
-    const row = document.createElement("div");
-    row.className = "song-item";
+    const row == document.createElement("div");
+    item.className = "song-row";
+
+    const item = document.createElement("div");
+    item.className = "song-item";
 
     // 曲情報
     const cover = document.createElement("img");
@@ -394,20 +397,21 @@ function renderSelectedList() {
     let startX = 0;
     let swiped = false;
 
-    row.addEventListener("touchstart", (e) => {
+    item.addEventListener("touchstart", (e) => {
       e.stopPropagation();
       startX = e.touches[0].clientX;
     });
 
-    row.addEventListener("touchmove", (e) => {
+    item.addEventListener("touchmove", (e) => {
       e.stopPropagation();
       const diff = e.touches[0].clientX - startX;
 
-      if (diff < -20) {
+        if (diff < -20) {
         row.style.transform = "translateX(-80px)";
         del.style.transform = "translateX(0)";
         swiped = true;
       }
+
       if (diff > 20 && swiped) {
         row.style.transform = "translateX(0)";
         del.style.transform = "translateX(100%)";
@@ -415,9 +419,10 @@ function renderSelectedList() {
       }
     });
 
-    row.appendChild(cover);
-    row.appendChild(info);
+    item.appendChild(cover);
+    item.appendChild(info);
     row.appendChild(del);
+    row.appendChild(item);
     container.appendChild(row);
   });
 }
