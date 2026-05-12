@@ -59,6 +59,8 @@ async function login() {
     });
 
     accessToken = tokenResponse.accessToken;
+    
+    loginBtn.disabled = false;
 
     // ③ フォルダ一覧取得（await OK）
     const folders = await listRootFolders();
@@ -80,7 +82,7 @@ async function login() {
    ③ トークン切れの際の処理
 ========================== */
 function relogin(){
-  loginBtn.disabled = false;
+  loginBtn.disabled = true;
 }
 async function fetchWithAuth(url,options = {}){
   let response = await fetch(url,options);
@@ -406,17 +408,17 @@ function renderSelectedList() {
       e.stopPropagation();
       const diff = e.touches[0].clientX - startX;
 
-        if (diff < -20) {
-        row.style.transform = "translateX(-80px)";
-        del.style.transform = "translateX(0)";
-        swiped = true;
-      }
+      if (diff < -20) {
+      item.style.transform = "translateX(-80px)";
+      del.style.transform = "translateX(0)";
+      swiped = true;
+    }
 
-      if (diff > 20 && swiped) {
-        row.style.transform = "translateX(0)";
-        del.style.transform = "translateX(100%)";
-        swiped = false;
-      }
+    if (diff > 20 && swiped) {
+      item.style.transform = "translateX(0)";
+      del.style.transform = "translateX(100%)";
+      swiped = false;
+    }
     });
 
     item.appendChild(cover);
