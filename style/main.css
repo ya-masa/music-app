@@ -32,7 +32,7 @@ body {
   color: var(--text-main);
   margin: 0;
   font-family: sans-serif;
-  padding-bottom: 200px; /* ミニプレイヤーの高さ分 */
+  padding-bottom: 150px;/*ミニプレイヤーの高さ分 */
 
 }
 
@@ -104,11 +104,9 @@ body {
   gap: 10px;
   padding: 10px 0;
   position: relative;
-  overflow: hidden;
 }
 .song-row {
   position: relative;
-  overflow: hidden; /* ← これが最重要 */
   width: 100%;
 }
 .song-delete-swipe{
@@ -252,7 +250,7 @@ body {
    ミニプレイヤー
 ========================== */
 #mini-player {
-  height: 200px;  
+  height: 150px;
   background: var(--player-bg); /* ほんのりベージュ */
   border-radius: 12px; /* ← ここがポイント */
   border-top: 1px solid var(--border-light);
