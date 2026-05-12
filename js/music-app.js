@@ -37,7 +37,6 @@ let audio = new Audio();  // mini-player と同期
 let currentIndex = 0;     // 再生中の曲番号
 let isRepeating = false;  // 1曲リピート
 
-
 /* ==========================
    ③ ログイン
 ========================== */
@@ -82,7 +81,7 @@ async function login() {
    ③ トークン切れの際の処理
 ========================== */
 function relogin(){
-  loginBtn.disabled = true;
+  loginBtn.disabled = false;
 }
 async function fetchWithAuth(url,options = {}){
   let response = await fetch(url,options);
