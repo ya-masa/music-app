@@ -59,7 +59,7 @@ async function login() {
 
     accessToken = tokenResponse.accessToken;
     
-    loginBtn.disabled = false;
+    loginBtn.disabled = true;
 
     // ③ フォルダ一覧取得（await OK）
     const folders = await listRootFolders();
@@ -81,7 +81,7 @@ async function login() {
    ③ トークン切れの際の処理
 ========================== */
 function relogin(){
-  loginBtn.disabled = false;
+  loginBtn.disabled = true;
 }
 async function fetchWithAuth(url,options = {}){
   let response = await fetch(url,options);
