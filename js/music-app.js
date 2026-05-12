@@ -339,7 +339,7 @@ function renderSelectedList() {
 
 // ラッパー（スワイプ対象）
     const row = document.createElement("div");
-    item.className = "song-row";
+    row.className = "song-row";
 
     const item = document.createElement("div");
     item.className = "song-item";
